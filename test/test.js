@@ -15,4 +15,4 @@ const css = [
 ];
 
 const result = shortbread(js, css, criticalCSS);
-console.log(result);
+console.log(JSON.stringify(result, null, 4));

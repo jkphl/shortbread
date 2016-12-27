@@ -49,16 +49,6 @@ function makeVinylFileList(val) {
 }
 
 /**
- * Convert a value into a list of functions
- *
- * @param {String|Array|Object} val Value
- * @return {Array} Function list
- */
-function makeFunctionList(val) {
-    return makeList(val).filter(v => typeof v === 'function');
-}
-
-/**
  * Create HTML fragments for assynchronously loading JavaScript and CSS resources
  *
  * @param {String|Array|Object} js JavaScript resource(s)
@@ -70,21 +60,20 @@ function shortbread(js = [], css = [], critical = null, callback = null) {
     const jsFiles = makeVinylFileList(js);
     const cssFiles = makeVinylFileList(css);
     const criticalFile = (vinyl.isVinyl(critical) && !critical.isNull()) ? critical : null;
-    const callbacks = makeFunctionList(callback);
-    const resources = {};
-    const result = {initial: '', successive: ''};
+    const result = {initial: '"use strict";', successive: '', resources: [], master: null};
 
     // 1. Initial head script
     let initial = '/* loader script */';
     initial += fs.readFileSync(path.join(__dirname, 'node_modules/fg-loadcss/src/loadCSS.js'));
     initial += fs.readFileSync(path.join(__dirname, 'node_modules/fg-loadcss/src/onloadCSS.js'));
-    result.initial = `<script>${uglify.minify(initial, {fromString: true}).code}</script>`;
+    initial += fs.readFileSync(path.join(__dirname, 'build/cssrelpreload.js'));
+    initial += fs.readFileSync(path.join(__dirname, 'build/shortbread.js'));
 
     // 2. JavaScript resources
     jsFiles.forEach((jsFile) => {
         const resourceHash = createHash(jsFile.contents.toString());
-        resources[resourceHash] = true;
-        result.initial += `<script src="${jsFile.relative}" id="${resourceHash}" async defer onload="shortbread.loaded(this.id)"></script>`;
+        result.resources.push(resourceHash);
+        result.initial += `<script src="${jsFile.relative}" id="${resourceHash}" async defer onload="SHORTBREAD_INSTANCE.loaded(this.id)"></script>`;
         result.successive += `<script src="${jsFile.relative}" async defer></script>`;
     });
 
@@ -96,15 +85,24 @@ function shortbread(js = [], css = [], critical = null, callback = null) {
     let synchronousCSS = '';
     cssFiles.forEach((cssFile) => {
         const resourceHash = createHash(cssFile.contents.toString());
-        result.initial += `<link rel="preload" href="${cssFile.relative}" id="${resourceHash}" as="style" onload="this.rel='stylesheet';shortbread.loaded(this.id)">`;
+        result.resources.push(resourceHash);
+        result.initial += `<link rel="preload" href="${cssFile.relative}" id="${resourceHash}" as="style" onload="this.rel='stylesheet';SHORTBREAD_INSTANCE.loaded(this.id)">`;
         synchronousCSS += `<link rel="stylesheet" href="${cssFile.relative}">`;
     });
+    result.initial += `<noscript>${synchronousCSS}</noscript>`;
     result.successive += synchronousCSS;
 
-    const cssrelpreload = fs.readFileSync(path.join(__dirname, 'build/cssrelpreload.js'));
-    result.initial += `<script>${cssrelpreload}</script>`;
-    result.initial += `<noscript>${synchronousCSS}</noscript>`;
-    console.log(result);
+    // Calculate the master hash
+    result.master = result.resources.length ? createHash(result.resources.join('-')) : null;
+
+    if (result.resources.length) {
+        initial += `var SHORTBREAD_INSTANCE = new Shortbread(${JSON.stringify(result.resources)}, '${result.master}',${JSON.stringify(callback)});`;
+    }
+    result.initial = `<script>${uglify.minify(initial, {fromString: true}).code}</script>` + result.initial;
+    result.initial = result.initial.split('SHORTBREAD_INSTANCE').join('sb' + result.master);
+
+
+    return result;
 }
 
 module.exports = shortbread;
