@@ -1,4 +1,4 @@
-/* Critical CSS (also part of style1.css) */
+/* Critical CSS (also part of style.css) */
 body {
     background-color: red;
     line-height: 1.4;
@@ -46,7 +46,7 @@ li:before {
     content: "☑ ";
 }
 
-/* Only on initial page loads (not part of style1.css) */
+/* Only on initial page loads (not part of style.css) */
 #initial {
     color: forestgreen;
 }

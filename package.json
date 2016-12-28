@@ -7,7 +7,7 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "build": "babel lib --presets es2015-script --out-dir build",
         "postinstall": "babel lib --presets es2015-script --out-dir build",
-        "php": "npm run build && node test/test.js && php -S 0.0.0.0:8080 -t tmp"
+        "php": "npm run build && node test/php/php.js && php -S 0.0.0.0:8080 -t tmp"
     },
     "repository": {
         "type": "git",
