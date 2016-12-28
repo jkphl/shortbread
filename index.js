@@ -64,7 +64,7 @@ function shortbread(js = [], css = [], critical = null, slot = null, callback = 
     const cookieSlot = (typeof slot === 'string') ? (slot.trim() || null) : null;
     const result = {
         initial: '',
-        successive: '',
+        subsequent: '',
         resources: [],
         hash: null,
         cookie: `sb${cookieSlot ? `_${cookieSlot}` : ''}`,
@@ -82,7 +82,7 @@ function shortbread(js = [], css = [], critical = null, slot = null, callback = 
         const resourceHash = createHash(jsFile.contents.toString());
         result.resources.push(resourceHash);
         result.initial += `<script src="${jsFile.relative}" id="${resourceHash}" async defer onload="SHORTBREAD_INSTANCE.loaded(this.id)"></script>`;
-        result.successive += `<script src="${jsFile.relative}" async defer></script>`;
+        result.subsequent += `<script src="${jsFile.relative}" async defer></script>`;
     });
 
     // 3.a Critical CSS
@@ -98,7 +98,7 @@ function shortbread(js = [], css = [], critical = null, slot = null, callback = 
         synchronousCSS += `<link rel="stylesheet" href="${cssFile.relative}">`;
     });
     result.initial += `<noscript>${synchronousCSS}</noscript>`;
-    result.successive += synchronousCSS;
+    result.subsequent += synchronousCSS;
 
     // Calculate the master hash
     result.hash = result.resources.length ? createHash(result.resources.join('-')) : null;

@@ -48,7 +48,7 @@ if (!empty($_GET['asset'])) {
 }
 
 ?><!DOCTYPE html>
-<html lang="en" class="<?= empty($_COOKIE['{{cookie}}']) ? 'initial' : 'successive'; ?>">
+<html lang="en" class="<?= empty($_COOKIE['{{cookie}}']) ? 'initial' : 'subsequent'; ?>">
     <head>
         <meta charset="UTF-8">
         <!-- Shortbread cookie name: {{cookie}}, expected: {{hash}}, actual: <?= $_COOKIE['{{cookie}}']; ?> -->
@@ -56,7 +56,7 @@ if (!empty($_GET['asset'])) {
 
         if (!empty($_COOKIE['{{cookie}}']) && ($_COOKIE['{{cookie}}'] === '{{hash}}')):
 
-            ?>{{{successive}}}<?php
+            ?>{{{subsequent}}}<?php
 
         else:
 
@@ -76,7 +76,7 @@ if (!empty($_GET['asset'])) {
                     properties and the red background color) is set by a couple "critical" CSS rules inlined into the
                     HTML source so that the page will render immediately without being blocked by additional resources.
                 </li>
-                <li id="successive">On successive loads, a cookie has been set and there will be no inlined critical CSS
+                <li id="subsequent">On subsequent loads, a cookie has been set and there will be no inlined critical CSS
                     anymore. Instead, the external resources should have been cached already and may even be loaded in
                     a blocking manner without causing a delay.
                 </li>
@@ -95,7 +95,7 @@ if (!empty($_GET['asset'])) {
                 </li>
             </ul>
             <nav>
-                <button id="reload-successive" onclick="window.location.reload()"<?= empty($_COOKIE['{{cookie}}']) ? ' disabled' : ''; ?>>Successive reload</button>
+                <button id="reload-subsequent" onclick="window.location.reload()"<?= empty($_COOKIE['{{cookie}}']) ? ' disabled' : ''; ?>>Successive reload</button>
                 <button onclick="document.cookie='{{cookie}}=;expires=-1';window.location.reload(true)">Initial load (clear cookie)</button>
             </nav>
         </main>

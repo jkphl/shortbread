@@ -46,7 +46,7 @@ li:before {
     content: "☑ ";
 }
 
-/* Non-critical CSS (added asynchronously and on successive page loads) */
+/* Non-critical CSS (added asynchronously and on subsequent page loads) */
 .initial body {
     background-color: darkorange;
 }
@@ -55,26 +55,26 @@ li:before {
     background-color: gold;
 }
 
-.successive #successive,
+.subsequent #subsequent,
 #css {
     color: forestgreen;
 }
 
-.successive #successive:before,
+.subsequent #subsequent:before,
 #css:before {
     content: "☑ ";
 }
 
 /* Successive loads: When both the JS and this stylesheet are loaded, we're finished! */
-.successive #initial,
-.successive #callback {
+.subsequent #initial,
+.subsequent #callback {
     text-decoration: line-through;
 }
 
-.successive body {
+.subsequent body {
     background-color: gold;
 }
 
-.successive .js {
+.subsequent .js {
     background-color: forestgreen;
 }
