@@ -1,7 +1,7 @@
 shortbread [![NPM version][npm-image]][npm-url] [![NPM downloads][npm-downloads]][npm-url] [![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url] [![Dependency Status][depstat-image]][depstat-url] [![Development Dependency Status][devdepstat-image]][devdepstat-url]
 ===
 
-is a Node module that helps you implement an asynchronous loading strategy for your CSS and JavaScript resources, thus improving the *start render time* of your websites. It's intendend to be part of your toolchain and plays well with Grunt, Gulp and alike.
+is a Node module that helps you implement an asynchronous, non-blocking loading strategy for your CSS and JavaScript resources, thus improving the *start render time* of your websites. It's intendend to be part of your toolchain and plays well with Grunt, Gulp and alike.
 
 Installation
 ------------
@@ -29,6 +29,8 @@ Based on these values, *shortbread* creates **two HTML fragments** (for the firs
 
 ### First page load
 
+![First page load example](doc/shortbread_first_load.png)
+
 The first page load fragment will accomplish the following:
 
 1. First, it will inline some JavaScript (including parts of [Filament Group's loadCSS](https://github.com/filamentgroup/loadCSS)) that is needed to create a *shortbread* instance and perform the following steps.
@@ -42,6 +44,8 @@ The first page load fragment will accomplish the following:
 
 
 ### Subsequent page loads
+
+![Subsequent page load example](doc/shortbread_subsequent_load.png)
 
 Based on the cookie set earlier, your server should be able to detect subsequent page loads and include the alternative HTML fragment. This one leverages the browser cache and simply
 
