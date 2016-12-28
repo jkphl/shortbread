@@ -51,8 +51,8 @@ function makeVinylFileList(val) {
 /**
  * Create HTML fragments for assynchronously loading JavaScript and CSS resources
  *
- * @param {String|Array|Object} js JavaScript resource(s)
- * @param {String|Array|Object} css CSS resource(s)
+ * @param {File|Array.<File>|Object.<String, File>} js JavaScript resource(s)
+ * @param {File|Array.<File>|Object.<String, File>} css CSS resource(s)
  * @param {File} critical Critical CSS resource
  * @param {String} slot Cookie slot
  * @param {Function|Array|Object} callback Callback(s)

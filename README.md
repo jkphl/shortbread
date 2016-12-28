@@ -49,6 +49,14 @@ Based on the cookie set earlier, your server should be able to detect subsequent
 2. loads your CSS resources (this time synchronously).
 
 
+### Shortbread cookie
+
+The cookie used by shortbread serves two purposes:
+
+1. If set, the server recognizes that the resources have already been loaded and switches into subsequent page load mode (i.e. doesn't make the client load the resources asynchronously as they should already be cached).
+2. The expected cookie value represents a unique set of resources and changes whenever one of the resources changes in content. This way the cookie serves as a cache busting measure and ensures that the resources get updated as soon as they're modified on the server. Please be aware that you also need to adapt [the server-side code](#server-side-load-type-detection) whenever the resources change.
+
+
 API
 ---
 
@@ -59,7 +67,7 @@ const shortbread = require('shortbread');
 const fragments = shortbread(jsResources, cssResources, criticalCSS, 'main', 'allLoaded');
 ```
 
-`shortbread()` will return an object with this signature:
+`fragments` will now hold an object with the following properties:
 
 ```js
 {
@@ -71,7 +79,30 @@ const fragments = shortbread(jsResources, cssResources, criticalCSS, 'main', 'al
 }
 ```
 
-*shortbread* expects you to use [Vinyl objects](https://github.com/gulpjs/vinyl) to enter your JavaScript and CSS resources. When creating `<script src="...">` and `<link href="...">` elements, it uses the Vinyl objects' [`relative` getter](https://github.com/gulpjs/vinyl#filerelative) to determine the request paths for your resources, so you can easily use virtual paths for your files. I recommend [vinyl-file](https://github.com/sindresorhus/vinyl-file) for easily creating Vinyl instances. Example:
+You can use these values as templating variables when rendering the [the server-side code](#server-side-load-type-detection) to handle client requests.
+
+### Arguments
+
+The signature of the `shortbread()` function looks like this:
+
+```js
+/**
+ * Create HTML fragments for assynchronously loading JavaScript and CSS resources
+ *
+ * @param {File|Array.<File>|Object.<String, File>} js JavaScript resource(s)
+ * @param {File|Array.<File>|Object.<String, File>} css CSS resource(s)
+ * @param {File} critical Critical CSS resource
+ * @param {String} slot Cookie slot
+ * @param {Function|Array|Object} callback Callback(s)
+ */
+function shortbread(js = [], css = [], critical = null, slot = null, callback = null) {
+    // ...
+}
+```
+
+#### File arguments
+
+*shortbread* expects you to use [Vinyl objects](https://github.com/gulpjs/vinyl) to enter your JavaScript and CSS resources (`js`, `css` and `critical` arguments). When creating `<script src="...">` and `<link href="...">` elements, it uses the Vinyl objects' [`relative` getter](https://github.com/gulpjs/vinyl#filerelative) to determine the request paths for your resources, so you can easily use virtual paths for your files. I recommend [vinyl-file](https://github.com/sindresorhus/vinyl-file) for easily creating Vinyl instances. Example:
 
 ```js
 const vinyl = require('vinyl-file');
@@ -82,15 +113,19 @@ script.path = `${script.base}/js/mysite.js`;
 // Will create `<script src="js/mysite.js" async defer></script>`
 ```
 
-### Server side code
+#### Cookie slot
 
-The way you implement the server-side page load type detection totally depends on your environment and the technologies involved in your website. In most cases you will want to plug *shortbread* into a templating process that creates an appropriate code snippet in some programming language (or maybe database entries) and use that as a junction. An example for a PHP / handlebars combo could look like this:
+By default, the name of the *shortbread* cookie is `sb`. If you're using multiple resource sets, however, you'll have to keep track of them separately by "slotting" the cookie. When you pass a `slot` argument to the `shortbread()` function, say `"set1"`, the cookie will be named `sb_set1`. The actual cookie name is returned in the `cookie` property of `shortbread()`'s result object.
+
+
+### Server side load type detection
+
+The way you implement the server-side load type detection totally depends on your environment and the technologies involved in your website. In most cases you will want to plug *shortbread* into a templating process that creates code snippets or alike that you can integrate into your setup and use for handling client requests. An example [handlebars](http://handlebarsjs.com/) template for creating a [PHP](http://php.net/) script could look like this:
 
 ```php
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <?php
+    <head><?php
 
         // If the shortbread cookie is present and matches the expected master hash: It's a subsequent page load
         if (!empty($_COOKIE['{{cookie}}']) && ($_COOKIE['{{cookie}}'] === '{{hash}}')):
@@ -104,8 +139,7 @@ The way you implement the server-side page load type detection totally depends o
 
         endif;
 
-        ?>
-        <meta charset="UTF-8">
+        ?><meta charset="UTF-8">
         <title>My site</title>
     </head>
     <body>
@@ -114,7 +148,7 @@ The way you implement the server-side page load type detection totally depends o
 </html>
 ```
 
-This is, by the way, pretty much the code used by an **example implementation** included in this package. You can run it and see *shortbread* in action by typing
+This is, by the way, pretty much the code used by the **example implementation** included in the package. You can run it and see *shortbread* in action by typing
 
 ```
 npm run php
