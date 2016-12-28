@@ -81,8 +81,6 @@ const fragments = shortbread(jsResources, cssResources, criticalCSS, 'main', 'al
 
 You can use these values as templating variables when rendering the [the server-side code](#server-side-load-type-detection) to handle client requests.
 
-### Arguments
-
 The signature of the `shortbread()` function looks like this:
 
 ```js
@@ -100,7 +98,7 @@ function shortbread(js = [], css = [], critical = null, slot = null, callback = 
 }
 ```
 
-#### File arguments
+### File arguments
 
 *shortbread* expects you to use [Vinyl objects](https://github.com/gulpjs/vinyl) to enter your JavaScript and CSS resources (`js`, `css` and `critical` arguments). When creating `<script src="...">` and `<link href="...">` elements, it uses the Vinyl objects' [`relative` getter](https://github.com/gulpjs/vinyl#filerelative) to determine the request paths for your resources, so you can easily use virtual paths for your files. I recommend [vinyl-file](https://github.com/sindresorhus/vinyl-file) for easily creating Vinyl instances. Example:
 
@@ -113,12 +111,19 @@ script.path = `${script.base}/js/mysite.js`;
 // Will create `<script src="js/mysite.js" async defer></script>`
 ```
 
-#### Cookie slot
+### Cookie slot
 
 By default, the name of the *shortbread* cookie is `sb`. If you're using multiple resource sets, however, you'll have to keep track of them separately by "slotting" the cookie. When you pass a `slot` argument to the `shortbread()` function, say `"set1"`, the cookie will be named `sb_set1`. The actual cookie name is returned in the `cookie` property of `shortbread()`'s result object.
 
 
-### Server side load type detection
+Gulp integration
+----------------
+
+TBD
+
+
+Server side load type detection
+-------------------------------
 
 The way you implement the server-side load type detection totally depends on your environment and the technologies involved in your website. In most cases you will want to plug *shortbread* into a templating process that creates code snippets or alike that you can integrate into your setup and use for handling client requests. An example [handlebars](http://handlebarsjs.com/) template for creating a [PHP](http://php.net/) script could look like this:
 
@@ -155,16 +160,6 @@ npm run php
 ```
 
 in your console and direct your browser to 'http://localhost:8080' afterwards. Obviously, you need PHP being installed on your machine for this.
-
-
-### Grunt
-
-TBD
-
-
-### Gulp
-
-TBD
 
 
 Known problems / To-do
