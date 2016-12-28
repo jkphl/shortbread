@@ -1,0 +1,76 @@
+/* Critical CSS (also part of style1.css) */
+body {
+    background-color: red;
+    line-height: 1.4;
+    padding: 1em;
+}
+
+body, button {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: medium;
+}
+
+main {
+    background-color: white;
+    max-width: 32em;
+    margin: 2em auto;
+    padding: 2em;
+}
+
+nav {
+    text-align: center;
+}
+
+ul {
+    list-style-type: none;
+}
+
+li {
+    position: relative;
+    color: #ccc;
+    margin-bottom: 1em;
+}
+
+li:before {
+    content: "☐ ";
+    position: absolute;
+    top: 0;
+    left: -2em;
+}
+
+.js #js {
+    color: forestgreen;
+}
+
+.js #js:before {
+    content: "☑ ";
+}
+
+/* Only on initial page loads (not part of style1.css) */
+#initial {
+    color: forestgreen;
+}
+
+.initial #successive {
+    text-decoration: line-through;
+}
+
+#initial:before {
+    content: "☑ ";
+}
+
+.initial .js {
+    background-color: darkorange;
+}
+
+.initial .all {
+    background-color: forestgreen !important;
+}
+
+.initial .all #callback {
+    color: forestgreen;
+}
+
+.initial .all #callback:before {
+    content: "☑ ";
+}

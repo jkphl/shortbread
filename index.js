@@ -54,16 +54,24 @@ function makeVinylFileList(val) {
  * @param {String|Array|Object} js JavaScript resource(s)
  * @param {String|Array|Object} css CSS resource(s)
  * @param {File} critical Critical CSS resource
+ * @param {String} slot Cookie slot
  * @param {Function|Array|Object} callback Callback(s)
  */
-function shortbread(js = [], css = [], critical = null, callback = null) {
+function shortbread(js = [], css = [], critical = null, slot = null, callback = null) {
     const jsFiles = makeVinylFileList(js);
     const cssFiles = makeVinylFileList(css);
     const criticalFile = (vinyl.isVinyl(critical) && !critical.isNull()) ? critical : null;
-    const result = {initial: '"use strict";', successive: '', resources: [], master: null};
+    const cookieSlot = (typeof slot === 'string') ? (slot.trim() || null) : null;
+    const result = {
+        initial: '',
+        successive: '',
+        resources: [],
+        hash: null,
+        cookie: `sb${cookieSlot ? `_${cookieSlot}` : ''}`,
+    };
 
     // 1. Initial head script
-    let initial = '/* loader script */';
+    let initial = '"use strict";';
     initial += fs.readFileSync(path.join(__dirname, 'node_modules/fg-loadcss/src/loadCSS.js'));
     initial += fs.readFileSync(path.join(__dirname, 'node_modules/fg-loadcss/src/onloadCSS.js'));
     initial += fs.readFileSync(path.join(__dirname, 'build/cssrelpreload.js'));
@@ -93,14 +101,13 @@ function shortbread(js = [], css = [], critical = null, callback = null) {
     result.successive += synchronousCSS;
 
     // Calculate the master hash
-    result.master = result.resources.length ? createHash(result.resources.join('-')) : null;
+    result.hash = result.resources.length ? createHash(result.resources.join('-')) : null;
 
     if (result.resources.length) {
-        initial += `var SHORTBREAD_INSTANCE = new Shortbread(${JSON.stringify(result.resources)}, '${result.master}',${JSON.stringify(callback)});`;
+        initial += `var SHORTBREAD_INSTANCE = new Shortbread(${JSON.stringify(result.resources)}, '${result.hash}', ${JSON.stringify(cookieSlot)}, ${JSON.stringify(callback)});`;
     }
-    result.initial = `<script>${uglify.minify(initial, {fromString: true}).code}</script>` + result.initial;
-    result.initial = result.initial.split('SHORTBREAD_INSTANCE').join('sb' + result.master);
-
+    result.initial = `<script>${uglify.minify(initial, { fromString: true }).code}</script>${result.initial}`;
+    result.initial = result.initial.split('SHORTBREAD_INSTANCE').join(`sb${result.hash}`);
 
     return result;
 }

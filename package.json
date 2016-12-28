@@ -1,47 +1,49 @@
 {
-  "name": "shortbread",
-  "version": "0.1.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "babel lib --presets es2015-script --out-dir build && for f in build/*.js; do uglifyjs $f --compress --mangle -o $f; done",
-    "postinstall": "babel lib --presets es2015-script --out-dir build && for f in build/*.js; do uglifyjs $f --compress --mangle -o $f; done",
-    "babel": "babel lib --presets es2015-script --out-dir build"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jkphl/shortbread.git"
-  },
-  "keywords": [
-    "cache",
-    "loader",
-    "loadcss",
-    "loadjs",
-    "preload",
-    "async",
-    "defer"
-  ],
-  "author": "Joschi Kuphal <https://jkphl.is>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/jkphl/shortbread/issues"
-  },
-  "homepage": "https://github.com/jkphl/shortbread#readme",
-  "dependencies": {
-    "babel-cli": "^6.18.0",
-    "babel-preset-es2015-script": "^1.1.0",
-    "crypto": "0.0.3",
-    "fg-loadcss": "^1.2.0",
-    "uglify-js": "^2.7.5",
-    "vinyl": "^2.0.1"
-  },
-  "devDependencies": {
-    "eslint": "^3.12.2",
-    "eslint-config-airbnb": "^13.0.0",
-    "eslint-plugin-import": "^2.2.0",
-    "eslint-plugin-jsx-a11y": "^2.2.3",
-    "eslint-plugin-react": "^6.8.0",
-    "vinyl-file": "^2.0.0"
-  }
+    "name": "shortbread",
+    "version": "0.1.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "build": "babel lib --presets es2015-script --out-dir build",
+        "postinstall": "babel lib --presets es2015-script --out-dir build",
+        "php": "npm run build && node test/test.js && php -S 0.0.0.0:8080 -t tmp"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/jkphl/shortbread.git"
+    },
+    "keywords": [
+        "cache",
+        "loader",
+        "loadcss",
+        "loadjs",
+        "preload",
+        "async",
+        "defer"
+    ],
+    "author": "Joschi Kuphal <https://jkphl.is>",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/jkphl/shortbread/issues"
+    },
+    "homepage": "https://github.com/jkphl/shortbread#readme",
+    "dependencies": {
+        "babel-cli": "^6.18.0",
+        "babel-preset-es2015-script": "^1.1.0",
+        "crypto": "0.0.3",
+        "fg-loadcss": "^1.2.0",
+        "uglify-js": "^2.7.5",
+        "vinyl": "^2.0.1"
+    },
+    "devDependencies": {
+        "eslint": "^3.12.2",
+        "eslint-config-airbnb": "^13.0.0",
+        "eslint-plugin-import": "^2.2.0",
+        "eslint-plugin-jsx-a11y": "^2.2.3",
+        "eslint-plugin-react": "^6.8.0",
+        "fs-extra": "^1.0.0",
+        "handlebars": "^4.0.6",
+        "vinyl-file": "^2.0.0"
+    }
 }

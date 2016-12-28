@@ -1,0 +1,80 @@
+/* Critical CSS (also inlined on initial page load) */
+body {
+    background-color: red;
+    line-height: 1.4;
+    padding: 1em;
+}
+
+body, button {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: medium;
+}
+
+main {
+    background-color: white;
+    max-width: 32em;
+    margin: 2em auto;
+    padding: 2em;
+}
+
+nav {
+    text-align: center;
+}
+
+ul {
+    list-style-type: none;
+}
+
+li {
+    position: relative;
+    color: #ccc;
+    margin-bottom: 1em;
+}
+
+li:before {
+    content: "☐ ";
+    position: absolute;
+    top: 0;
+    left: -2em;
+}
+
+.js #js {
+    color: forestgreen;
+}
+
+.js #js:before {
+    content: "☑ ";
+}
+
+/* Non-critical CSS (added asynchronously and on successive page loads) */
+.initial body {
+    background-color: darkorange;
+}
+
+.initial .js {
+    background-color: gold;
+}
+
+.successive #successive,
+#css {
+    color: forestgreen;
+}
+
+.successive #successive:before,
+#css:before {
+    content: "☑ ";
+}
+
+/* Successive loads: When both the JS and this stylesheet are loaded, we're finished! */
+.successive #initial,
+.successive #callback {
+    text-decoration: line-through;
+}
+
+.successive body {
+    background-color: gold;
+}
+
+.successive .js {
+    background-color: forestgreen;
+}

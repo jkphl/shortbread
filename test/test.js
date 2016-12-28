@@ -1,18 +1,23 @@
 const path = require('path');
 const shortbread = require('..');
 const vinyl = require('vinyl-file');
+const fs = require('fs-extra');
+const handlebars = require('handlebars');
 
-const criticalCSS = vinyl.readSync(path.join(__dirname, 'critical.css'));
-const js = [
-    vinyl.readSync(path.join(__dirname, 'script1.js')),
-    vinyl.readSync(path.join(__dirname, 'script2.js')),
-    'invalid'
-];
-const css = [
-    vinyl.readSync(path.join(__dirname, 'styles1.css')),
-    vinyl.readSync(path.join(__dirname, 'styles2.css')),
-    'invalid'
-];
+// Prepare the output directory
+fs.mkdirsSync(path.join(__dirname, '../tmp'));
 
-const result = shortbread(js, css, criticalCSS);
-console.log(JSON.stringify(result, null, 4));
+const criticalCSS = vinyl.readSync(path.join(__dirname, 'fixtures/critical.css'));
+const script1 = vinyl.readSync(path.join(__dirname, 'fixtures/script1.js'));
+script1.path = `${script1.base}/index.php?asset=script1.js`;
+const js = [script1];
+const style1 = vinyl.readSync(path.join(__dirname, 'fixtures/style1.css'));
+style1.path = `${style1.base}/index.php?asset=style1.css`;
+const css = [style1];
+const result = shortbread(js, css, criticalCSS, 'main', 'allLoaded');
+
+// Compile and store the PHP test file
+const hbs = fs.readFileSync(path.join(__dirname, 'index.hbs'));
+const template = handlebars.compile(hbs.toString());
+const php = template(result);
+fs.writeFileSync(path.join(__dirname, '../tmp/index.php'), php);

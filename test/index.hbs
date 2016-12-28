@@ -1,0 +1,103 @@
+<?php
+
+if (!empty($_GET['asset'])) {
+    $asset = $_GET['asset'];
+    $assetResource = dirname(__DIR__).DIRECTORY_SEPARATOR.'test'.DIRECTORY_SEPARATOR.'fixtures'.DIRECTORY_SEPARATOR.$asset;
+
+    // Parse file data
+    $lastModified = filemtime($assetResource);
+    $etagFile = md5_file($assetResource);
+    $ifModifiedSince = (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) ? $_SERVER['HTTP_IF_MODIFIED_SINCE'] : false);
+    $etagHeader = (isset($_SERVER['HTTP_IF_NONE_MATCH']) ? trim($_SERVER['HTTP_IF_NONE_MATCH']) : false);
+
+    // Set caching header
+    header('Last-Modified: '. gmdate('D, d M Y H:i:s', $lastModified) .' GMT');
+    header('Etag: '. $etagFile);
+    header('Cache-Control: public');
+
+    // Check if the requested asset has changed
+    if (!empty($_COOKIE['{{cookie}}']) &&
+        ((@strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) == $lastModified) || ($etagHeader == $etagFile)))
+    {
+        header('HTTP/1.1 304 Not Modified');
+        exit;
+    } else {
+         $assetExtension = pathinfo($assetResource, PATHINFO_EXTENSION);
+         switch($assetExtension) {
+            case 'css':
+                header('Content-Type: text/css');
+                break;
+            case 'js':
+                header('Content-Type: text/javascript');
+                break;
+        }
+
+        $now = new \DateTimeImmutable();
+        $expires = $now->modify('+1 month');
+        $lastmod = new \DateTimeImmutable('@'.$lastModified);
+
+        header('Date: '.$now->format('r'));
+        header('Last-Modified: '.$lastmod->format('r'));
+        header('Expires: '.$expires->format('r'));
+        header('Content-Length: '. filesize($assetResource));
+
+        usleep(rand(2000000, 5000000));
+        @readfile($assetResource);
+        exit;
+    }
+}
+
+?><!DOCTYPE html>
+<html lang="en" class="<?= empty($_COOKIE['{{cookie}}']) ? 'initial' : 'successive'; ?>">
+    <head>
+        <meta charset="UTF-8">
+        <!-- Shortbread cookie name: {{cookie}}, expected: {{hash}}, actual: <?= $_COOKIE['{{cookie}}']; ?> -->
+        <?php
+
+        if (!empty($_COOKIE['{{cookie}}']) && ($_COOKIE['{{cookie}}'] === '{{hash}}')):
+
+            ?>{{{successive}}}<?php
+
+        else:
+
+            ?>{{{initial}}}<?php
+
+        endif;
+
+        ?>
+        <title>Shortbread test page</title>
+    </head>
+    <body>
+        <main>
+            <h1>Shortbread test page</h1>
+            <p>This is a test page for the shortbread library.</p>
+            <ul>
+                <li id="initial">When loading this page for the first time, the base styling (centered layout, the font
+                    properties and the red background color) is set by a couple "critical" CSS rules inlined into the
+                    HTML source so that the page will render immediately without being blocked by additional resources.
+                </li>
+                <li id="successive">On successive loads, a cookie has been set and there will be no inlined critical CSS
+                    anymore. Instead, the external resources should have been cached already and may even be loaded in
+                    a blocking manner without causing a delay.
+                </li>
+                <li id="css">Furthermore, an external CSS resource will be loaded which contains the critical CSS as
+                    well as some other rules. As soon as the styles have been loaded, the background color of the page
+                    should lighten up a little. The delivery of the stylesheet will be randomly delayed by somewhere
+                    between 2 and 5 seconds to demonstrate the non-blocking way of loading.
+                </li>
+                <li id="js">Additionally, an external JavaScript resource will be loaded that further lightens up the
+                    background color. Again it gets delayed by somewhere between 2 and 5 seconds. Sometimes the script
+                    might be loaded before the CSS stylesheet, sometimes not (the order doesn't really matter).
+                </li>
+                <li id="callback">Initial load only: A JavaScript callback will be called as soon as all external
+                    resources have been loaded. The background color of the page should finally turn green then. For
+                    demonstration purposes, the callback itself adds another random delay of 2-5 seconds.
+                </li>
+            </ul>
+            <nav>
+                <button id="reload-successive" onclick="window.location.reload()"<?= empty($_COOKIE['{{cookie}}']) ? ' disabled' : ''; ?>>Successive reload</button>
+                <button onclick="document.cookie='{{cookie}}=;expires=-1';window.location.reload(true)">Initial load (clear cookie)</button>
+            </nav>
+        </main>
+    </body>
+</html>
