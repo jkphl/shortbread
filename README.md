@@ -75,27 +75,27 @@ const fragments = shortbread(jsResources, cssResources, criticalCSS, 'main', 'al
 
 ```js
 {
-    initial: '<script>...</noscript>', // Initial page load fragment
-    subsequent: '<script>...</link>', // Subsequent page load fragment
-    resources: ['422a6fc6', '60062743'], // Single resource hashes
-    hash: 'df5bf8f7', // Cookie value when all resources are loaded
-    cookie: 'sb_main' // Cookie name (here: including "main" slot)
+    initial: '<script>...</noscript>',      // Initial page load fragment
+    subsequent: '<script>...</link>',       // Subsequent page load fragment
+    resources: ['422a6fc6', '60062743'],    // Single resource hashes
+    hash: 'df5bf8f7',                       // Cookie value when all resources are loaded
+    cookie: 'sb_main'                       // Cookie name (here: including "main" slot)
 }
 ```
 
 You can use these values as templating variables when rendering the [the server-side code](#server-side-load-type-detection) to handle client requests.
 
-The signature of the `shortbread()` function looks like this:
+The signature of `shortbread()` looks like this:
 
 ```js
 /**
  * Create HTML fragments for assynchronously loading JavaScript and CSS resources
  *
- * @param {File|Array.<File>|Object.<String, File>} js JavaScript resource(s)
- * @param {File|Array.<File>|Object.<String, File>} css CSS resource(s)
- * @param {File} critical Critical CSS resource
- * @param {String} slot Cookie slot
- * @param {Function|Array|Object} callback Callback(s)
+ * @param {File|Array.<File>|Object.<String, File>} js  [OPTIONAL] JavaScript resource(s)
+ * @param {File|Array.<File>|Object.<String, File>} css [OPTIONAL] CSS resource(s)
+ * @param {File} critical                               [OPTIONAL] Critical CSS resource
+ * @param {String} slot                                 [OPTIONAL] Cookie slot
+ * @param {String} callback                             [OPTIONAL] Callback
  */
 function shortbread(js = [], css = [], critical = null, slot = null, callback = null) {
     // ...
@@ -118,12 +118,6 @@ script.path = `${script.base}/js/mysite.js`;
 ### Cookie slot
 
 By default, the name of the *shortbread* cookie is `sb`. If you're using multiple resource sets, however, you'll have to keep track of them separately by "slotting" the cookie. When you pass a `slot` argument to the `shortbread()` function, say `"set1"`, the cookie will be named `sb_set1`. The actual cookie name is returned in the `cookie` property of `shortbread()`'s result object.
-
-
-Gulp integration
-----------------
-
-TBD
 
 
 Server side load type detection
@@ -164,6 +158,97 @@ npm run php
 ```
 
 in your console and direct your browser to 'http://localhost:8080' afterwards. Obviously, you need PHP being installed on your machine for this.
+
+
+Gulp usage
+----------
+
+`shortbread.stream()` is an additional interface that's intended to be used with streams and supports some extended features. Simply pass in the JavaScript and CSS resources you'd like to include (*shortbread* will seperate them internally — see below) and you'll get two HTML fragment files as the output.
+
+This is the `shortbread.stream()` function signature:
+
+```js
+/**
+ * Streaming interface for shortbread
+ *
+ * @param {File} critical       [OPTIONAL] Critical CSS resource
+ * @param {String} slot         [OPTIONAL] Cookie slot
+ * @param {String} callback     [OPTIONAL] Callback
+ * @param {Object} config       [OPTIONAL] Configuration
+ */
+function shortbread.stream(critical = null, slot = null, callback = null, config = {});
+```
+
+Again, the `critical` CSS (if any) needs to be passed in as a Vinyl object. Also the `slot` and `callback` arguments are identical to the [regular API](#api). The `config` object defaults to these values:
+
+```js
+{
+    css: ['\\.css$'],               // List of regular expressions to match CSS resources
+    js: ['\\.js$'],                 // List of regular expressions to match JavaScript resources
+    initial: 'initial.html',        // Name for the initial page load HTML fragment
+    subsequent: 'subsequent.html',  // Name for the subsequent page load HTML fragment
+    data: false                     // Whether to create a JSON file with shortbread's return values
+}
+```
+
+As you see, *shortbread* uses regular expressions to detect and separate your CSS and JavaScript resources. Any file that's not matched by any of the regular expressions will simply get passed through (and might be used for further templating processes, see below).
+
+In case you're using a cookie `slot`, the slot name will be added to the fragment file names as in `initial.<slot>.html` and `subsequent.<slot>.html`.
+
+If you set `data` to `true`, an additional JSON file `shortbread.json` (respectively `shortbread.<slot>.json`) will be created that contains the usual *shortbread* [result object](#api). You could use this file as variable source for a downstream templating process when generating your [server side junction code](#server-side-load-type-detection). However, there's a much smarter approach this this:
+
+As mentioned above, *shortbread* will simply pass through any file that's not recognized as a CSS or JavaScript resource. Additionally, it sets the `data` property of these files to *shortbread*'s result object which effectively emulates [gulp-data](https://github.com/colynb/gulp-data)'s behaviour. That way (and with the help of [gulp-filter](https://github.com/sindresorhus/gulp-filter)) you can immediately plug this into a variety of templating engines like [gulp-swig](https://github.com/colynb/gulp-swig) or [gulp-jade / gulp-pug](https://github.com/pugjs/gulp-pug). Here's a gulpfile example that uses [gulp-template](https://github.com/sindresorhus/gulp-template) to parse a [Lo-Dash/Underscore template](http://lodash.com/docs#template) and create a simple PHP request handler out of it:
+
+```js
+const gulp = require('gulp');
+const shortbread = require('.').stream;
+const vinyl = require('vinyl-file');
+const path = require('path');
+const filter = require('gulp-filter');
+const template = require('gulp-template');
+
+gulp.task('default', () => {
+    const critical = vinyl.readSync('test/fixtures/critical.css');
+    const tmpl = filter(['**/*.php'], { restore: true });
+
+    // Start with your JavaScript, CSS and template resources
+    gulp.src(
+        ['**/fixtures/script.js', '**/fixtures/style.css', 'gulp/*.php'],
+        { cwd: path.join(__dirname, 'test') }
+    )
+        .pipe(shortbread(critical, 'main', null))   // Run shortbread
+        .pipe(tmpl)                                 // Filter all but the template file
+        .pipe(template())                           // Run the template engine
+        .pipe(tmpl.restore)                         // Restore all files
+        .pipe(gulp.dest('./tmp'));                  // Write the files to their destination
+});
+```
+
+The template file for this might look like:
+
+```php
+<!DOCTYPE html>
+<html lang="en">
+    <head><?php
+
+        // If the shortbread cookie is present and matches the expected master hash: It's a subsequent page load
+        if (!empty($_COOKIE['<%= cookie %>']) && ($_COOKIE['<%= cookie %>'] === '<%= hash %>')) {
+            include 'initial.main.html';
+
+        // Else: It's an initial page load
+        } else {
+            include 'subsequent.main.html';
+        }
+
+        ?><meta charset="UTF-8">
+        <title>My site</title>
+    </head>
+    <body>
+        <!-- Page content -->
+    </body>
+</html>
+
+```
 
 
 Known problems / To-do

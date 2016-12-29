@@ -37,7 +37,8 @@
     "crypto": "0.0.3",
     "fg-loadcss": "^1.2.0",
     "uglify-js": "^2.7.5",
-    "vinyl": "^2.0.1"
+    "vinyl": "^2.0.1",
+    "through2": "^2.0.3"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",
@@ -48,6 +49,9 @@
     "eslint-plugin-jsx-a11y": "^3.0.2",
     "eslint-plugin-react": "^6.8.0",
     "fs-extra": "^1.0.0",
+    "gulp": "^3.9.1",
+    "gulp-filter": "^4.0.0",
+    "gulp-template": "^4.0.0",
     "handlebars": "^4.0.6",
     "vinyl-file": "^2.0.0"
   },

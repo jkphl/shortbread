@@ -1,8 +1,29 @@
-const vinyl = require('vinyl');
+const Vinyl = require('vinyl');
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 const uglify = require('uglify-js');
+const through = require('through2');
+
+const fileProperties = ['history', 'cwd', 'base', 'stat', '_contents'];
+
+/**
+ * Test if an object is a vinyl file
+ *
+ * @param {File|Object} file Vinyl file / object
+ * @return {Boolean} Object is a Vinyl file
+ */
+function isVinylFile(file) {
+    if (typeof file !== 'object') {
+        return false;
+    }
+    const properties = new Set(Object.getOwnPropertyNames(file));
+    if (fileProperties.filter(p => !properties.has(p)).length) {
+        return false;
+    }
+    const content = Object.getOwnPropertyDescriptor(file, '_contents');
+    return (typeof content === 'object') && content.writable && content.enumerable && content.configurable;
+}
 
 /**
  * Create a string hash
@@ -45,22 +66,34 @@ function makeList(val) {
  * @return {Array} Value list
  */
 function makeVinylFileList(val) {
-    return makeList(val).filter(v => vinyl.isVinyl(v) && !v.isNull());
+    return makeList(val).filter(v => isVinylFile(v));
+}
+
+/**
+ * Convert a value into a list of regular expressions
+ *
+ * @param {String|Array|Object} val Value
+ * @return {Array} Regex list
+ */
+function makeRegexList(val) {
+    return makeList(val)
+        .filter(v => ((typeof v === 'string' && v.trim().length) || (typeof v === 'object' && v.constructor === RegExp)))
+        .map(v => (typeof v === 'string' ? new RegExp(v) : v));
 }
 
 /**
  * Create HTML fragments for assynchronously loading JavaScript and CSS resources
  *
- * @param {File|Array.<File>|Object.<String, File>} js JavaScript resource(s)
- * @param {File|Array.<File>|Object.<String, File>} css CSS resource(s)
- * @param {File} critical Critical CSS resource
- * @param {String} slot Cookie slot
- * @param {Function|Array|Object} callback Callback(s)
+ * @param {File|Array.<File>|Object.<String, File>} js [OPTIONAL] JavaScript resource(s)
+ * @param {File|Array.<File>|Object.<String, File>} css [OPTIONAL] CSS resource(s)
+ * @param {File} critical [OPTIONAL] Critical CSS resource
+ * @param {String} slot [OPTIONAL] Cookie slot
+ * @param {String} callback [OPTIONAL] Callback(s)
  */
 function shortbread(js = [], css = [], critical = null, slot = null, callback = null) {
     const jsFiles = makeVinylFileList(js);
     const cssFiles = makeVinylFileList(css);
-    const criticalFile = (vinyl.isVinyl(critical) && !critical.isNull()) ? critical : null;
+    const criticalFile = isVinylFile(critical) ? critical : null;
     const cookieSlot = (typeof slot === 'string') ? (slot.trim() || null) : null;
     const result = {
         initial: '',
@@ -111,5 +144,120 @@ function shortbread(js = [], css = [], critical = null, slot = null, callback = 
 
     return result;
 }
+
+/**
+ * Streaming interface for shortbread
+ *
+ * @param {File} critical [OPTIONAL] Critical CSS resource
+ * @param {String} slot [OPTIONAL] Cookie slot (optional)
+ * @param {String} callback [OPTIONAL] Callback(s)
+ * @param {Object} config [OPTIONAL] Configuration
+ */
+shortbread.stream = function stream(critical = null, slot = null, callback = null, config = {}) {
+    const options = Object.assign({
+        css: ['\\.css$'],
+        js: ['\\.js$'],
+        initial: 'initial.html',
+        subsequent: 'subsequent.html',
+        data: false,
+    }, config);
+    options.css = makeRegexList(options.css);
+    options.js = makeRegexList(options.js);
+    options.data = !!options.data;
+
+    // Validate the critical CSS
+    if (critical && !isVinylFile(critical)) {
+        throw new Error('shortbread.stream: Critical CSS must be a Vinyl object');
+    }
+
+    // Prepare the fragment paths
+    const cookieSlot = (typeof slot === 'string') ? (slot.trim() || '') : '';
+    if (cookieSlot.length) {
+        // Prepare the initial page load fragment
+        const initialExt = path.extname(options.initial);
+        options.initial = `${options.initial.substr(0, options.initial.length - initialExt.length)}.${cookieSlot}${initialExt}`;
+
+        // Prepare the subsequent page load fragment
+        const subsequentExt = path.extname(options.subsequent);
+        options.subsequent = `${options.subsequent.substr(0, options.subsequent.length - subsequentExt.length)}.${cookieSlot}${subsequentExt}`;
+    }
+
+    // Prepare the resource lists
+    const js = [];
+    const css = [];
+    const other = [];
+
+    /**
+     * Buffer incoming contents
+     *
+     * @param {File} file File
+     * @param enc
+     * @param {Function} cb Callback
+     */
+    function bufferContents(file, enc, cb) {
+        // Detect whether it's a JavaScript resource
+        for (const r of options.js) {
+            if (file.relative.match(r)) {
+                js.push(file);
+                cb();
+                return;
+            }
+        }
+
+        // Detect whether it's a CSS resource
+        for (const r of options.css) {
+            if (file.relative.match(r)) {
+                css.push(file);
+                cb();
+                return;
+            }
+        }
+
+        other.push(file);
+        cb();
+    }
+
+    /**
+     * End the stream
+     *
+     * @param {Function} cb Callback
+     */
+    function endStream(cb) {
+        const result = shortbread(js, css, critical, cookieSlot, callback);
+
+        // Create the initial page load resource
+        this.push(new Vinyl({
+            path: options.initial,
+            contents: new Buffer(result.initial),
+        }));
+
+        // Create the subsequent page load resource
+        this.push(new Vinyl({
+            path: options.subsequent,
+            contents: new Buffer(result.subsequent),
+        }));
+
+        other.forEach((file) => {
+            const fileWithData = file.clone({
+                deep: true,
+                contents: true,
+            });
+            fileWithData.data = result;
+            this.push(fileWithData);
+        });
+
+        // Create a JSON file with the shortbread result
+        if (options.data) {
+            this.push(new Vinyl({
+                path: `shortbread${cookieSlot ? `.${cookieSlot}` : ''}.json`,
+                contents: new Buffer(JSON.stringify(result, null, 4)),
+            }));
+        }
+
+        cb();
+    }
+
+    return through.obj(bufferContents, endStream);
+};
 
 module.exports = shortbread;
