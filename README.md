@@ -253,10 +253,15 @@ The Lo-Dash / Underscore template might look like this:
 ```
 
 
-Known problems / To-do
-----------------------
+Known problems
+--------------
 
-Currently there are no known problems. However, the module is in a very early stage and might have severe bugs. Please let me know if you spot one of these!
+Currently there are no known problems. However, the module is in a very early stage and might have severe bugs. Please let me know if you spot one!
+
+To-do
+-----
+
+* Add tests
 
 
 Changelog

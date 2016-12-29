@@ -14,7 +14,7 @@ const fileProperties = ['history', 'cwd', 'base', 'stat', '_contents'];
  * @return {Boolean} Object is a Vinyl file
  */
 function isVinylFile(file) {
-    if (typeof file !== 'object') {
+    if (!file || (typeof file !== 'object')) {
         return false;
     }
     const properties = new Set(Object.getOwnPropertyNames(file));
