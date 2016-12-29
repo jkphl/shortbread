@@ -105,8 +105,8 @@ function shortbread(js = [], css = [], critical = null, slot = null, callback = 
 
     // 1. Initial head script
     let initial = '"use strict";';
-    initial += fs.readFileSync(path.join(__dirname, 'node_modules/fg-loadcss/src/loadCSS.js'));
-    initial += fs.readFileSync(path.join(__dirname, 'node_modules/fg-loadcss/src/onloadCSS.js'));
+    initial += fs.readFileSync(require.resolve('fg-loadcss/src/loadCSS.js'));
+    initial += fs.readFileSync(require.resolve('fg-loadcss/src/onloadCSS.js'));
     initial += fs.readFileSync(path.join(__dirname, 'build/cssrelpreload.js'));
     initial += fs.readFileSync(path.join(__dirname, 'build/shortbread.js'));
 
