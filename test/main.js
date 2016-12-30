@@ -234,10 +234,11 @@ describe('shortbread().stream', () => {
     describe('should support options', () => {
         it('file extension filters', (done) => {
             const jsxHash = shortbread.createHash(fs.readFileSync(path.join(__dirname, 'fixtures/helloworld.jsx')));
-            const scssHash = shortbread.createHash(fs.readFileSync(path.join(__dirname, 'fixtures/critical.scss')));
+            const scssHash = shortbread.createHash(fs.readFileSync(path.join(__dirname, 'fixtures/dummy.scss')));
 
             function assertData(d) {
                 if ((path.extname(d.path) !== '.scss') && (path.extname(d.path) !== '.jsx')) {
+                    console.log(d.data);
                     should(d.data).be.Object();
                     should(d.data.resources).be.Array();
                     should(d.data.resources).be.length(2);

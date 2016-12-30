@@ -247,6 +247,7 @@ shortbread.stream = function stream(critical, slot, callback, config) {
     function endStream(cb) {
         const result = shortbread(js, css, critical, cookieSlot, callback,
             { prefix: options.prefix });
+        console.log(result);
 
         // If resources have been specified
         if (result.resources.length) {
