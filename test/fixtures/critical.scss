@@ -29,50 +29,50 @@ li {
     position: relative;
     color: #ccc;
     margin-bottom: 1em;
-}
 
-li:before {
-    content: "☐ ";
-    position: absolute;
-    top: 0;
-    left: -2em;
+    &:before {
+        content: "☐ ";
+        position: absolute;
+        top: 0;
+        left: -2em;
+    }
 }
 
 .js #js {
     color: forestgreen;
-}
 
-.js #js:before {
-    content: "☑ ";
+    &:before {
+        content: "☑ ";
+    }
 }
 
 /* Only on initial page loads (not part of style.css) */
 #initial {
     color: forestgreen;
-}
 
-.initial #subsequent {
-    text-decoration: line-through;
-}
+    #subsequent {
+        text-decoration: line-through;
+    }
 
-#initial:before {
-    content: "☑ ";
-}
+    &:before {
+        content: "☑ ";
+    }
 
-.initial .js {
-    background-color: darkorange;
-}
+    .js {
+        background-color: darkorange;
+    }
 
-.initial .all {
-    background-color: forestgreen !important;
-}
+    .all {
+        background-color: forestgreen !important;
 
-.initial .all #callback {
-    color: forestgreen;
-}
+        #callback {
+            color: forestgreen;
 
-.initial .all #callback:before {
-    content: "☑ ";
+            &:before {
+                content: "☑ ";
+            }
+        }
+    }
 }
 
 /* criticalcss (don't remove, used for testing) */

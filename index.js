@@ -26,17 +26,6 @@ function isVinylFile(file) {
 }
 
 /**
- * Create a string hash
- *
- * @param {String} str String
- * @param {Number} length Hash length
- * @return {String} String hash
- */
-function createHash(str, length = 8) {
-    return crypto.createHash('md5').update(str).digest('hex').substr(0, Math.max(8, length || 0));
-}
-
-/**
  * Convert a value into a value list
  *
  * @param {String|Array|Object} val Value
@@ -48,19 +37,19 @@ function makeList(val) {
     }
     let ret = val;
 
-    if (typeof val === 'object') {
-        if (val.constructor !== Array) {
+    if (!Array.isArray(val)) {
+        if ((typeof val === 'object') && (val.constructor === Object)) {
             ret = Object.keys(val).map(key => val[key]);
+        } else {
+            ret = [val];
         }
-    } else {
-        ret = [val];
     }
 
     return ret;
 }
 
 /**
- * Convert a value into a list of non-empty string values
+ * Convert a value into a list of Vinyl files
  *
  * @param {String|Array|Object} val Value
  * @return {Array} Value list
@@ -110,16 +99,25 @@ function shortbread(js = [], css = [], critical = null, slot = null, callback = 
         cookie: `sb${cookieSlot ? `_${cookieSlot}` : ''}`,
     };
 
+    // Return if no resources are given
+    if (!jsFiles.length && !cssFiles.length && !criticalFile) {
+        return result;
+    }
+
     // 1. Initial head script
-    let initial = '"use strict";';
-    initial += fs.readFileSync(require.resolve('fg-loadcss/src/loadCSS.js'));
-    initial += fs.readFileSync(require.resolve('fg-loadcss/src/onloadCSS.js'));
-    initial += fs.readFileSync(path.join(__dirname, 'build/cssrelpreload.js'));
-    initial += fs.readFileSync(path.join(__dirname, 'build/shortbread.js'));
+    let initial = '';
+    if (cssFiles.length) {
+        initial += fs.readFileSync(require.resolve('fg-loadcss/src/loadCSS.js'));
+        initial += fs.readFileSync(require.resolve('fg-loadcss/src/onloadCSS.js'));
+        initial += fs.readFileSync(path.join(__dirname, 'build/cssrelpreload.js'));
+    }
+    if (jsFiles.length || cssFiles.length) {
+        initial += fs.readFileSync(path.join(__dirname, 'build/shortbread.js'));
+    }
 
     // 2. JavaScript resources
     jsFiles.forEach((jsFile) => {
-        const resourceHash = createHash(jsFile.contents.toString());
+        const resourceHash = shortbread.createHash(jsFile.contents.toString());
         result.resources.push(resourceHash);
         result.initial += `<script src="${options.prefix}${jsFile.relative}" id="${resourceHash}" async defer onload="SHORTBREAD_INSTANCE.loaded(this.id)"></script>`;
         result.subsequent += `<script src="${options.prefix}${jsFile.relative}"></script>`;
@@ -132,21 +130,23 @@ function shortbread(js = [], css = [], critical = null, slot = null, callback = 
 
     let synchronousCSS = '';
     cssFiles.forEach((cssFile) => {
-        const resourceHash = createHash(cssFile.contents.toString());
+        const resourceHash = shortbread.createHash(cssFile.contents.toString());
         result.resources.push(resourceHash);
         result.initial += `<link rel="preload" href="${options.prefix}${cssFile.relative}" id="${resourceHash}" as="style" onload="this.rel='stylesheet';SHORTBREAD_INSTANCE.loaded(this.id)">`;
         synchronousCSS += `<link rel="stylesheet" href="${options.prefix}${cssFile.relative}">`;
     });
-    result.initial += `<noscript>${synchronousCSS}</noscript>`;
-    result.subsequent += synchronousCSS;
+    if (synchronousCSS.length) {
+        result.initial += `<noscript>${synchronousCSS}</noscript>`;
+        result.subsequent += synchronousCSS;
+    }
 
     // Calculate the master hash
-    result.hash = result.resources.length ? createHash(result.resources.join('-')) : null;
+    result.hash = result.resources.length ? shortbread.createHash(result.resources.join('-')) : null;
 
     if (result.resources.length) {
         initial += `var SHORTBREAD_INSTANCE = new Shortbread(${JSON.stringify(result.resources)}, '${result.hash}', ${JSON.stringify(cookieSlot)}, ${JSON.stringify(callback)});`;
     }
-    result.initial = `<script>${uglify.minify(initial, { fromString: true }).code}</script>${result.initial}`;
+    result.initial = `${initial.length ? `<script>"use strict";${uglify.minify(initial, { fromString: true }).code}</script>` : ''}${result.initial}`;
     result.initial = result.initial.split('SHORTBREAD_INSTANCE').join(`sb${result.hash}`);
 
     return result;
@@ -203,6 +203,13 @@ shortbread.stream = function stream(critical = null, slot = null, callback = nul
      * @param {Function} cb Callback
      */
     function bufferContents(file, enc, cb) {
+        // We don't do streams
+        if (file.isStream()) {
+            this.emit('error', new Error('shortbread: Streaming not supported'));
+            cb();
+            return;
+        }
+
         // Detect whether it's a JavaScript resource
         for (const r of options.js) {
             if (file.relative.match(r)) {
@@ -234,17 +241,20 @@ shortbread.stream = function stream(critical = null, slot = null, callback = nul
         const result = shortbread(js, css, critical, cookieSlot, callback,
             { prefix: options.prefix });
 
-        // Create the initial page load resource
-        this.push(new Vinyl({
-            path: options.initial,
-            contents: new Buffer(result.initial),
-        }));
+        // If resources have been specified
+        if (result.resources.length) {
+            // Create the initial page load resource
+            this.push(new Vinyl({
+                path: options.initial,
+                contents: new Buffer(result.initial),
+            }));
 
-        // Create the subsequent page load resource
-        this.push(new Vinyl({
-            path: options.subsequent,
-            contents: new Buffer(result.subsequent),
-        }));
+            // Create the subsequent page load resource
+            this.push(new Vinyl({
+                path: options.subsequent,
+                contents: new Buffer(result.subsequent),
+            }));
+        }
 
         other.forEach((file) => {
             const fileWithData = file.clone({
@@ -267,6 +277,17 @@ shortbread.stream = function stream(critical = null, slot = null, callback = nul
     }
 
     return through.obj(bufferContents, endStream);
+};
+
+/**
+ * Create a string hash
+ *
+ * @param {String} str String
+ * @param {Number} length Hash length
+ * @return {String} String hash
+ */
+shortbread.createHash = function createHash(str, length = 8) {
+    return crypto.createHash('md5').update(str).digest('hex').substr(0, Math.max(8, length || 0));
 };
 
 module.exports = shortbread;
