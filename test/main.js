@@ -238,7 +238,6 @@ describe('shortbread().stream', () => {
 
             function assertData(d) {
                 if ((path.extname(d.path) !== '.scss') && (path.extname(d.path) !== '.jsx')) {
-                    console.log(d.data);
                     should(d.data).be.Object();
                     should(d.data.resources).be.Array();
                     should(d.data.resources).be.length(2);

@@ -123,7 +123,6 @@ function shortbread(js, css, critical, slot, callback, config) {
     // 2. JavaScript resources
     jsFiles.forEach((jsFile) => {
         const resourceHash = shortbread.createHash(jsFile.contents.toString());
-        console.log(jsFile, resourceHash);
         result.resources.push(resourceHash);
         result.initial += `<script src="${options.prefix}${jsFile.relative}" id="${resourceHash}" async defer onload="SHORTBREAD_INSTANCE.loaded(this.id)"></script>`;
         result.subsequent += `<script src="${options.prefix}${jsFile.relative}"></script>`;
@@ -137,7 +136,6 @@ function shortbread(js, css, critical, slot, callback, config) {
     let synchronousCSS = '';
     cssFiles.forEach((cssFile) => {
         const resourceHash = shortbread.createHash(cssFile.contents.toString());
-        console.log(cssFile, resourceHash);
         result.resources.push(resourceHash);
         result.initial += `<link rel="preload" href="${options.prefix}${cssFile.relative}" id="${resourceHash}" as="style" onload="this.rel='stylesheet';SHORTBREAD_INSTANCE.loaded(this.id)">`;
         synchronousCSS += `<link rel="stylesheet" href="${options.prefix}${cssFile.relative}">`;
@@ -247,7 +245,6 @@ shortbread.stream = function stream(critical, slot, callback, config) {
     function endStream(cb) {
         const result = shortbread(js, css, critical, cookieSlot, callback,
             { prefix: options.prefix });
-        console.log(result);
 
         // If resources have been specified
         if (result.resources.length) {
