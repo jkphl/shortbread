@@ -1,3 +1,6 @@
+## 0.1.3 Feature release (unreleased)
+* Added support for `prefix` option
+
 ## 0.1.2 Bugfix release (2016-12-29)
 * Fixed faulty check for Vinyl files ([#1](https://github.com/jkphl/shortbread/issues/1))
 

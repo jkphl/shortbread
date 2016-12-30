@@ -49,8 +49,8 @@ The first page load fragment will accomplish the following:
 
 Based on the cookie set on intial page load, your server should be able to detect subsequent visits and include the alternative HTML fragment. This one leverages the browser cache and simply
 
-1. loads your JavaScript resources (still with `async` and `defer` — because, why not?) and
-2. loads your CSS resources (this time synchronously).
+1. loads your JavaScript resources (this time without `async` and `defer`) and
+2. loads your CSS resources (synchronously as well).
 
 
 ### Shortbread cookie
@@ -68,7 +68,7 @@ To use *shortbread* from JavaScript, you'd do the following (example for NodeJS)
 
 ```js
 const shortbread = require('shortbread');
-const fragments = shortbread(jsResources, cssResources, criticalCSS, 'main', 'allLoaded');
+const fragments = shortbread(js, css, criticalCSS, 'main', 'allLoaded', {prefix: '/'});
 ```
 
 The return value will be an object with the following properties:
@@ -96,8 +96,9 @@ The signature of `shortbread()` looks like this:
  * @param {File} critical                               [OPTIONAL] Critical CSS resource
  * @param {String} slot                                 [OPTIONAL] Cookie slot
  * @param {String} callback                             [OPTIONAL] Callback
+ * @param {Object} config                               [OPTIONAL] Extended configuration
  */
-function shortbread(js = [], css = [], critical = null, slot = null, callback = null) {
+function shortbread(js = [], css = [], critical = null, slot = null, callback = null, config = {}) {
     // ...
 }
 ```
@@ -120,6 +121,14 @@ As you see, I recommend [vinyl-file](https://github.com/sindresorhus/vinyl-file)
 ### Cookie slot
 
 By default, the name of the *shortbread* cookie is `sb`. If you're using multiple resource sets, however, you'll have to keep track of them separately by "slotting" the cookie. When you pass a `slot` argument to the `shortbread()` function, say `"set1"`, the cookie will be named `sb_set1`. The actual cookie name is returned in the `cookie` property of `shortbread()`'s result object.
+
+### Extended configuration
+
+The sixth argument to `shortbread()` may be an object with following properties:
+
+| Property | Type     | Description                                    |
+|----------|----------|------------------------------------------------|
+| prefix   | String   | Prefix for all resource URLs (JavaScript and CSS). Set it to `"/"` for instance in order to use root-relative paths like `<script src="/path/to/script.js">`.|
 
 
 Server side load type detection
@@ -176,7 +185,7 @@ The `shortbread.stream()` signature looks like this:
  * @param {File} critical       [OPTIONAL] Critical CSS resource
  * @param {String} slot         [OPTIONAL] Cookie slot
  * @param {String} callback     [OPTIONAL] Callback
- * @param {Object} config       [OPTIONAL] Configuration
+ * @param {Object} config       [OPTIONAL] Extended configuration
  */
 function shortbread.stream(critical = null, slot = null, callback = null, config = {});
 ```
@@ -189,7 +198,8 @@ Again, the `critical` CSS (if any) needs to be passed in as a Vinyl object. Also
     js: ['\\.js$'],                 // List of regular expressions to match JavaScript resources
     initial: 'initial.html',        // Name for the initial page load HTML fragment
     subsequent: 'subsequent.html',  // Name for the subsequent page load HTML fragment
-    data: false                     // Whether to create a JSON file with shortbread's return values
+    data: false,                    // Whether to create a JSON file with shortbread's return values
+    prefix: ''                      // Prefix for all resource URLs (see extended configuration)
 }
 ```
 
@@ -214,15 +224,22 @@ gulp.task('default', () => {
     const tmpl = filter(['**/*.php'], { restore: true });
 
     // Start with your JavaScript, CSS and template resources
-    gulp.src(
-        ['**/fixtures/script.js', '**/fixtures/style.css', 'gulp/*.php'],
-        { cwd: path.join(__dirname, 'test') }
-    )
-        .pipe(shortbread(critical, 'main', null))   // Run shortbread
-        .pipe(tmpl)                                 // Filter all but the template file
-        .pipe(template())                           // Run the template engine
-        .pipe(tmpl.restore)                         // Restore all files
-        .pipe(gulp.dest('./tmp'));                  // Write the files to their destination
+    gulp.src(['**/fixtures/script.js', '**/fixtures/style.css', 'gulp/*.php'], { cwd: path.join(__dirname, 'test') })
+
+        // Run shortbread
+        .pipe(shortbread(critical, 'main', null, { prefix: '/' }))
+
+        // Filter all but the template file
+        .pipe(tmpl)
+
+        // Run the template engine
+        .pipe(template())
+
+        // Restore all files
+        .pipe(tmpl.restore)
+
+        // Write the files to their destination
+        .pipe(gulp.dest('./tmp'));
 });
 ```
 

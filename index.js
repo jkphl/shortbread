@@ -89,12 +89,19 @@ function makeRegexList(val) {
  * @param {File} critical [OPTIONAL] Critical CSS resource
  * @param {String} slot [OPTIONAL] Cookie slot
  * @param {String} callback [OPTIONAL] Callback(s)
+ * @param {Object} config [OPTIONAL] Extended configuration
  */
-function shortbread(js = [], css = [], critical = null, slot = null, callback = null) {
+function shortbread(js = [], css = [], critical = null, slot = null, callback = null, config = {}) {
     const jsFiles = makeVinylFileList(js);
     const cssFiles = makeVinylFileList(css);
     const criticalFile = isVinylFile(critical) ? critical : null;
     const cookieSlot = (typeof slot === 'string') ? (slot.trim() || null) : null;
+    const options = Object.assign({ prefix: '' }, config);
+
+    if (typeof options.prefix !== 'string') {
+        options.prefix = '';
+    }
+
     const result = {
         initial: '',
         subsequent: '',
@@ -114,8 +121,8 @@ function shortbread(js = [], css = [], critical = null, slot = null, callback = 
     jsFiles.forEach((jsFile) => {
         const resourceHash = createHash(jsFile.contents.toString());
         result.resources.push(resourceHash);
-        result.initial += `<script src="${jsFile.relative}" id="${resourceHash}" async defer onload="SHORTBREAD_INSTANCE.loaded(this.id)"></script>`;
-        result.subsequent += `<script src="${jsFile.relative}" async defer></script>`;
+        result.initial += `<script src="${options.prefix}${jsFile.relative}" id="${resourceHash}" async defer onload="SHORTBREAD_INSTANCE.loaded(this.id)"></script>`;
+        result.subsequent += `<script src="${options.prefix}${jsFile.relative}"></script>`;
     });
 
     // 3.a Critical CSS
@@ -127,8 +134,8 @@ function shortbread(js = [], css = [], critical = null, slot = null, callback = 
     cssFiles.forEach((cssFile) => {
         const resourceHash = createHash(cssFile.contents.toString());
         result.resources.push(resourceHash);
-        result.initial += `<link rel="preload" href="${cssFile.relative}" id="${resourceHash}" as="style" onload="this.rel='stylesheet';SHORTBREAD_INSTANCE.loaded(this.id)">`;
-        synchronousCSS += `<link rel="stylesheet" href="${cssFile.relative}">`;
+        result.initial += `<link rel="preload" href="${options.prefix}${cssFile.relative}" id="${resourceHash}" as="style" onload="this.rel='stylesheet';SHORTBREAD_INSTANCE.loaded(this.id)">`;
+        synchronousCSS += `<link rel="stylesheet" href="${options.prefix}${cssFile.relative}">`;
     });
     result.initial += `<noscript>${synchronousCSS}</noscript>`;
     result.subsequent += synchronousCSS;
@@ -151,12 +158,13 @@ function shortbread(js = [], css = [], critical = null, slot = null, callback = 
  * @param {File} critical [OPTIONAL] Critical CSS resource
  * @param {String} slot [OPTIONAL] Cookie slot (optional)
  * @param {String} callback [OPTIONAL] Callback(s)
- * @param {Object} config [OPTIONAL] Configuration
+ * @param {Object} config [OPTIONAL] Extended configuration
  */
 shortbread.stream = function stream(critical = null, slot = null, callback = null, config = {}) {
     const options = Object.assign({
         css: ['\\.css$'],
         js: ['\\.js$'],
+        prefix: '',
         initial: 'initial.html',
         subsequent: 'subsequent.html',
         data: false,
@@ -223,7 +231,8 @@ shortbread.stream = function stream(critical = null, slot = null, callback = nul
      * @param {Function} cb Callback
      */
     function endStream(cb) {
-        const result = shortbread(js, css, critical, cookieSlot, callback);
+        const result = shortbread(js, css, critical, cookieSlot, callback,
+            { prefix: options.prefix });
 
         // Create the initial page load resource
         this.push(new Vinyl({

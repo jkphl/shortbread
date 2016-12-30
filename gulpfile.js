@@ -23,9 +23,19 @@ gulp.task('default', () => {
 
     // Start with your JavaScript, CSS and template resources
     gulp.src(['**/fixtures/script.js', '**/fixtures/style.css', 'gulp/*.php'], { cwd: path.join(__dirname, 'test') })
-        .pipe(shortbread(critical, 'main', null))   // Run shortbread
-        .pipe(tmpl)                                 // Filter all but the template file
-        .pipe(template())                           // Run the template engine
-        .pipe(tmpl.restore)                         // Restore all files
-        .pipe(gulp.dest('./tmp'));                  // Write the files to their destination
+
+        // Run shortbread
+        .pipe(shortbread(critical, 'main', null, { prefix: '/' }))
+
+        // Filter all but the template file
+        .pipe(tmpl)
+
+        // Run the template engine
+        .pipe(template())
+
+        // Restore all files
+        .pipe(tmpl.restore)
+
+        // Write the files to their destination
+        .pipe(gulp.dest('./tmp'));
 });
