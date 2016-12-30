@@ -172,6 +172,13 @@ describe('shortbread()', () => {
             should(result.subsequent).equal('<script src="/test/fixtures/script.js"></script>');
         });
     });
+
+    describe('should ignore', () => {
+        it('invalid prefix', () => {
+            const result = shortbread(js, null, null, null, null, { prefix: false });
+            should(result.subsequent).equal('<script src="test/fixtures/script.js"></script>');
+        });
+    });
 });
 
 describe('shortbread().stream', () => {
@@ -182,7 +189,11 @@ describe('shortbread().stream', () => {
         stream.end();
     });
 
-    it('should emit error on streamed file', (done) => {
+    it('should error on invalid critical CSS', () => {
+        shortbread.stream.bind(null, { invalid: true }).should.throw('shortbread.stream: Critical CSS must be a Vinyl object');
+    });
+
+    it('should error on streamed file', (done) => {
         gulp.src(path.join(__dirname, 'fixtures/*.js'), { buffer: false })
             .pipe(shortbread.stream())
             .once('error', (err) => {
@@ -266,6 +277,19 @@ describe('shortbread().stream', () => {
                 }))
                 .pipe(assert.nth(1, (d) => {
                     should(path.basename(d.path)).eql('second.html');
+                }))
+                .pipe(assert.end(done));
+        });
+
+        it('slotted fragment file names', (done) => {
+            gulp.src(['fixtures/*.js', 'fixtures/style.css', 'gulp/gulp.php'], { cwd: __dirname })
+                .pipe(shortbread.stream(null, 'test'))
+                .pipe(assert.length(3))
+                .pipe(assert.nth(0, (d) => {
+                    should(path.basename(d.path)).eql('initial.test.html');
+                }))
+                .pipe(assert.nth(1, (d) => {
+                    should(path.basename(d.path)).eql('subsequent.test.html');
                 }))
                 .pipe(assert.end(done));
         });
