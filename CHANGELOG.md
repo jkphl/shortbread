@@ -1,4 +1,4 @@
-## 0.2.0 Feature release (unreleased)
+## 0.2.0 Feature release (2016-12-30)
 * Added support for `prefix` option
 * Added tests
 * Removed function default values to improve support for older NodeJS versions

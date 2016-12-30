@@ -235,17 +235,25 @@ describe('shortbread().stream', () => {
         it('file extension filters', (done) => {
             const jsxHash = shortbread.createHash(fs.readFileSync(path.join(__dirname, 'fixtures/helloworld.jsx')));
             const scssHash = shortbread.createHash(fs.readFileSync(path.join(__dirname, 'fixtures/critical.scss')));
-            gulp.src(['fixtures/*', 'gulp/gulp.php'], { cwd: __dirname })
-                .pipe(shortbread.stream(null, null, null, { css: ['\\.scss$'], js: ['\\.jsx$'] }))
-                .pipe(assert.length(6))
-                .pipe(assert.nth(2, (d) => {
+
+            function assertData(d) {
+                if ((path.extname(d.path) !== '.scss') && (path.extname(d.path) !== '.jsx')) {
                     should(d.data).be.Object();
                     should(d.data.resources).be.Array();
                     should(d.data.resources).be.length(2);
                     should(d.data.resources).deepEqual([jsxHash, scssHash]);
                     should(d.data).have.property('hash', shortbread.createHash(`${jsxHash}-${scssHash}`));
                     should(d.data).have.property('cookie', 'sb');
-                }))
+                }
+            }
+
+            gulp.src(['fixtures/*', 'gulp/gulp.php'], { cwd: __dirname })
+                .pipe(shortbread.stream(null, null, null, { css: ['\\.scss$'], js: ['\\.jsx$'] }))
+                .pipe(assert.length(6))
+                .pipe(assert.nth(2, assertData))
+                .pipe(assert.nth(3, assertData))
+                .pipe(assert.nth(4, assertData))
+                .pipe(assert.nth(5, assertData))
                 .pipe(assert.end(done));
         });
 
