@@ -84,12 +84,13 @@ function makeRegexList(val) {
  * @param {String} callback [OPTIONAL] Callback(s)
  * @param {Object} config [OPTIONAL] Extended configuration
  */
-function shortbread(js = [], css = [], critical = null, slot = null, callback = null, config = {}) {
+function shortbread(js, css, critical, slot, callback, config) {
     const jsFiles = makeVinylFileList(js);
     const cssFiles = makeVinylFileList(css);
     const criticalFile = isVinylFile(critical) ? critical : null;
     const cookieSlot = (typeof slot === 'string') ? (slot.trim() || null) : null;
-    const options = Object.assign({ prefix: '' }, config);
+    const options = Object.assign({ prefix: '' }, config || {});
+    const callbackString = callback ? JSON.stringify(callback) : 'null';
 
     if (typeof options.prefix !== 'string') {
         options.prefix = '';
@@ -148,7 +149,7 @@ function shortbread(js = [], css = [], critical = null, slot = null, callback = 
     result.hash = result.resources.length ? shortbread.createHash(result.resources.join('-')) : null;
 
     if (result.resources.length) {
-        initial += `var SHORTBREAD_INSTANCE = new Shortbread(${JSON.stringify(result.resources)}, '${result.hash}', ${JSON.stringify(cookieSlot)}, ${JSON.stringify(callback)});`;
+        initial += `var SHORTBREAD_INSTANCE = new Shortbread(${JSON.stringify(result.resources)}, '${result.hash}', ${JSON.stringify(cookieSlot)}, ${callbackString});`;
     }
     result.initial = `${initial.length ? `<script>"use strict";${uglify.minify(initial, { fromString: true }).code}</script>` : ''}${result.initial}`;
     result.initial = result.initial.split('SHORTBREAD_INSTANCE').join(`sb${result.hash}`);
@@ -164,7 +165,7 @@ function shortbread(js = [], css = [], critical = null, slot = null, callback = 
  * @param {String} callback [OPTIONAL] Callback(s)
  * @param {Object} config [OPTIONAL] Extended configuration
  */
-shortbread.stream = function stream(critical = null, slot = null, callback = null, config = {}) {
+shortbread.stream = function stream(critical, slot, callback, config) {
     const options = Object.assign({
         css: ['\\.css$'],
         js: ['\\.js$'],
@@ -172,7 +173,7 @@ shortbread.stream = function stream(critical = null, slot = null, callback = nul
         initial: 'initial.html',
         subsequent: 'subsequent.html',
         data: false,
-    }, config);
+    }, config || {});
     options.css = makeRegexList(options.css);
     options.js = makeRegexList(options.js);
     options.data = !!options.data;

@@ -98,7 +98,7 @@ The signature of `shortbread()` looks like this:
  * @param {String} callback                             [OPTIONAL] Callback
  * @param {Object} config                               [OPTIONAL] Extended configuration
  */
-function shortbread(js = [], css = [], critical = null, slot = null, callback = null, config = {}) {
+function shortbread(js, css, critical, slot, callback, config) {
     // ...
 }
 ```
@@ -187,7 +187,7 @@ The `shortbread.stream()` signature looks like this:
  * @param {String} callback     [OPTIONAL] Callback
  * @param {Object} config       [OPTIONAL] Extended configuration
  */
-function shortbread.stream(critical = null, slot = null, callback = null, config = {});
+function shortbread.stream(critical, slot, callback, config);
 ```
 
 Again, the `critical` CSS (if any) needs to be passed in as a Vinyl object. Also the `slot` and `callback` arguments are identical to the [regular API](#api). The special `config` object defaults to these values:
