@@ -1,3 +1,7 @@
+/* eslint strict: ["error", "global"] */
+
+'use strict';
+
 const Vinyl = require('vinyl');
 const crypto = require('crypto');
 const path = require('path');

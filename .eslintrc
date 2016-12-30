@@ -4,6 +4,10 @@
         "browser": true,
         "node": true
     },
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "script"
+    },
     "extends": "airbnb",
     "rules": {
         "no-restricted-syntax": 0,
