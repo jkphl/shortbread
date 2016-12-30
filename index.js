@@ -291,8 +291,8 @@ shortbread.stream = function stream(critical, slot, callback, config) {
  * @param {Number} length Hash length
  * @return {String} String hash
  */
-shortbread.createHash = function createHash(str, length = 8) {
-    return crypto.createHash('md5').update(str).digest('hex').substr(0, Math.max(8, length || 0));
+shortbread.createHash = function createHash(str, length) {
+    return crypto.createHash('md5').update(str).digest('hex').substr(0, Math.max(8, parseInt(length || 8, 10)));
 };
 
 module.exports = shortbread;
