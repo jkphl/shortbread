@@ -4,8 +4,8 @@
     "description": "Asynchronous, non-blocking loading pattern for CSS and JavaScript resources",
     "main": "index.js",
     "scripts": {
-        "test": "npm run build && eslint **/*.js && istanbul test _mocha --report html -- test/*.js --reporter spec",
-        "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
+        "test": "npm run build && eslint **/*.js && istanbul test _mocha --report html -- test/*.js --use_strict --reporter spec",
+        "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- --use_strict -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
         "build": "babel lib --presets es2015-script --out-dir build",
         "prepublish": "npm run build",
         "php": "npm run build && node test/php/php.js && php -S 0.0.0.0:8080 -t tmp"
@@ -66,5 +66,8 @@
         "build",
         "doc",
         "lib"
-    ]
+    ],
+    "engines": {
+        "node": ">=4.0"
+    }
 }
