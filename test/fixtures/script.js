@@ -7,4 +7,4 @@ function allLoaded() {
     }, 2000 + (Math.random() * 3000));
 }
 
-document.body.className += ' js';
+document.documentElement.className += ' js';

@@ -51,7 +51,7 @@ li:before {
     background-color: darkorange;
 }
 
-.initial .js {
+.initial.js body {
     background-color: gold;
 }
 

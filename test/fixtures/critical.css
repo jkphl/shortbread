@@ -59,7 +59,7 @@ li:before {
     content: "☑ ";
 }
 
-.initial .js {
+.initial.js body {
     background-color: darkorange;
 }
 

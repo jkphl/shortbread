@@ -9,7 +9,7 @@ const fs = require('fs');
 const uglify = require('uglify-js');
 const through = require('through2');
 
-const fileProperties = ['history', 'cwd', 'base', 'stat', '_contents'];
+const fileProperties = ['history', 'stat', '_contents'];
 
 /**
  * Test if an object is a vinyl file
@@ -18,11 +18,16 @@ const fileProperties = ['history', 'cwd', 'base', 'stat', '_contents'];
  * @return {Boolean} Object is a Vinyl file
  */
 function isVinylFile(file) {
+    if (Vinyl.isVinyl(file)) {
+        return true;
+    }
     if (!file || (typeof file !== 'object')) {
         return false;
     }
     const properties = new Set(Object.getOwnPropertyNames(file));
-    if (fileProperties.filter(p => !properties.has(p)).length) {
+    if ((!properties.has('cwd') && !properties.has('_cwd'))
+        || fileProperties.filter(p => !properties.has(p)).length
+    ) {
         return false;
     }
     const content = Object.getOwnPropertyDescriptor(file, '_contents');
