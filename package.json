@@ -1,6 +1,6 @@
 {
     "name": "shortbread",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "Asynchronous, non-blocking loading pattern for CSS and JavaScript resources",
     "main": "index.js",
     "scripts": {

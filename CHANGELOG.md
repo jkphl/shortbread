@@ -1,3 +1,7 @@
+## 0.3.0 Bugfix release (2017-02-17)
+* Updated dependencies
+* Fixed several loading bugs in Firefox & Internet Explorer
+
 ## 0.2.0 Feature release (2016-12-30)
 * Added support for `prefix` option
 * Added tests

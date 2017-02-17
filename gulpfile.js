@@ -6,7 +6,7 @@
  * @see https://github.com/jkphl/shortbread
  *
  * @author Joschi Kuphal <joschi@kuphal.net> (https://github.com/jkphl)
- * @copyright © 2016 Joschi Kuphal
+ * @copyright © 2017 Joschi Kuphal
  * @license MIT https://raw.github.com/jkphl/gulp-cache-bust-meta/master/LICENSE
  */
 

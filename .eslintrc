@@ -20,6 +20,7 @@
             {
                 "allowForLoopAfterthoughts": true
             }
-        ]
+        ],
+        "no-multi-assign": 0
     }
 }

@@ -289,7 +289,7 @@ Please refer to the [changelog](CHANGELOG.md) for a complete release history.
 
 Legal
 -----
-Copyright © 2016 Joschi Kuphal <joschi@kuphal.net> / [@jkphl](https://twitter.com/jkphl). *shortbread* is licensed under the terms of the [MIT license](LICENSE.txt).
+Copyright © 2017 Joschi Kuphal <joschi@kuphal.net> / [@jkphl](https://twitter.com/jkphl). *shortbread* is licensed under the terms of the [MIT license](LICENSE.txt).
 
 
 [npm-url]: https://npmjs.org/package/shortbread
