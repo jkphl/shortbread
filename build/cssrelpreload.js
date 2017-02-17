@@ -1,7 +1,7 @@
 /* global this loadCSS SHORTBREAD_INSTANCE */
 (function cssrelpreload(w) {
     // rel=preload support test
-    if (!w.loadCSS) {
+    if (!w.loadCSS || !w.onloadCSS) {
         return;
     }
     var rp = loadCSS.relpreload = {};
@@ -20,7 +20,7 @@
         var _loop = function _loop(i) {
             var link = links[i];
             if (link.rel === 'preload' && link.getAttribute('as') === 'style') {
-                w.loadCSS(link.href, link, function () {
+                w.onloadCSS(w.loadCSS(link.href, link, link.getAttribute('media')), function () {
                     return SHORTBREAD_INSTANCE.loaded(link.id);
                 });
                 link.rel = null;
@@ -36,16 +36,16 @@
     if (!rp.support()) {
         (function () {
             rp.poly();
-            var run = w.setInterval(rp.poly, 300);
+            var run = w.setInterval(rp.poly, 100);
+            var cp = function clearPoly() {
+                rp.poly();
+                w.clearInterval(run);
+            };
             if (w.addEventListener) {
-                w.addEventListener('load', function () {
-                    return w.clearInterval(run);
-                });
+                w.addEventListener('DOMContentLoaded', cp);
             }
             if (w.attachEvent) {
-                w.attachEvent('onload', function () {
-                    return w.clearInterval(run);
-                });
+                w.attachEvent('onload', cp);
             }
         })();
     }

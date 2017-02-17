@@ -95,7 +95,7 @@ if (!empty($_GET['asset'])) {
                 </li>
             </ul>
             <nav>
-                <button id="reload-subsequent" onclick="window.location.reload()"<?= empty($_COOKIE['{{cookie}}']) ? ' disabled' : ''; ?>>Successive reload</button>
+                <button id="reload-subsequent" onclick="window.location.reload()"<?= empty($_COOKIE['{{cookie}}']) ? ' disabled' : ''; ?>>Subsequent reload</button>
                 <button onclick="document.cookie='{{cookie}}=;expires=-1';window.location.reload(true)">Initial load (clear cookie)</button>
             </nav>
         </main>
