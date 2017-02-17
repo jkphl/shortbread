@@ -68,7 +68,7 @@ if (!empty($_GET['asset'])) {
         <title>Shortbread test page</title>
     </head>
     <body>
-        <main>
+        <div>
             <h1>Shortbread test page</h1>
             <p>This is a test page for the shortbread library.</p>
             <ul>
@@ -98,6 +98,6 @@ if (!empty($_GET['asset'])) {
                 <button id="reload-subsequent" onclick="window.location.reload()"<?= empty($_COOKIE['{{cookie}}']) ? ' disabled' : ''; ?>>Subsequent reload</button>
                 <button onclick="document.cookie='{{cookie}}=;expires=-1';window.location.reload(true)">Initial load (clear cookie)</button>
             </nav>
-        </main>
+        </div>
     </body>
 </html>

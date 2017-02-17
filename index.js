@@ -129,7 +129,7 @@ function shortbread(js, css, critical, slot, callback, config) {
     jsFiles.forEach((jsFile) => {
         const resourceHash = shortbread.createHash(jsFile.contents.toString());
         result.resources.push(resourceHash);
-        result.initial += `<script src="${options.prefix}${jsFile.relative}" id="${resourceHash}" async defer onload="SHORTBREAD_INSTANCE.loaded(this.id)"></script>`;
+        result.initial += `<script src="${options.prefix}${jsFile.relative}" id="${resourceHash}" async defer onreadystatechange="SHORTBREAD_INSTANCE.onloadScript(this)" onload="SHORTBREAD_INSTANCE.onloadScript(this)"></script>`;
         result.subsequent += `<script src="${options.prefix}${jsFile.relative}"></script>`;
     });
 

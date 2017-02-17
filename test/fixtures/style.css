@@ -3,6 +3,8 @@ body {
     background-color: red;
     line-height: 1.4;
     padding: 1em;
+    -webkit-transition: background-color 1s;
+    transition: background-color 1s;
 }
 
 body, button {
@@ -10,7 +12,7 @@ body, button {
     font-size: medium;
 }
 
-main {
+div {
     background-color: white;
     max-width: 32em;
     margin: 2em auto;
@@ -75,6 +77,6 @@ li:before {
     background-color: gold;
 }
 
-.subsequent .js {
+.subsequent.js body {
     background-color: forestgreen;
 }
