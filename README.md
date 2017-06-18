@@ -91,8 +91,8 @@ The signature of `shortbread()` looks like this:
 /**
  * Create HTML fragments for assynchronously loading JavaScript and CSS resources
  *
- * @param {File|Array.<File>|Object.<String, File>} js  [OPTIONAL] JavaScript resource(s)
- * @param {File|Array.<File>|Object.<String, File>} css [OPTIONAL] CSS resource(s)
+ * @param {File|Array.<String,File>|Object.<String,File>} js  [OPTIONAL] JavaScript resource(s)
+ * @param {File|Array.<String,File>|Object.<String,File>} css [OPTIONAL] CSS resource(s)
  * @param {File} critical                               [OPTIONAL] Critical CSS resource
  * @param {String} slot                                 [OPTIONAL] Cookie slot
  * @param {String} callback                             [OPTIONAL] Callback
@@ -117,6 +117,8 @@ script.path = `${script.base}/js/mysite.js`;
 ```
 
 As you see, I recommend [vinyl-file](https://github.com/sindresorhus/vinyl-file) for creating Vinyl objects of your files.
+
+For external resources you can also pass in absolute URLs for `js` and `css` instead of Vinyl objects.
 
 ### Cookie slot
 
@@ -195,7 +197,9 @@ Again, the `critical` CSS (if any) needs to be passed in as a Vinyl object. Also
 ```js
 {
     css: ['\\.css$'],               // List of regular expressions to match CSS resources
+    cssUrl: [],                     // List of external CSS resource URLs
     js: ['\\.js$'],                 // List of regular expressions to match JavaScript resources
+    jsUrl: [],                      // List of external JS resource URLs
     initial: 'initial.html',        // Name for the initial page load HTML fragment
     subsequent: 'subsequent.html',  // Name for the subsequent page load HTML fragment
     data: false,                    // Whether to create a JSON file with shortbread's return values
@@ -203,7 +207,7 @@ Again, the `critical` CSS (if any) needs to be passed in as a Vinyl object. Also
 }
 ```
 
-As you see, *shortbread* uses regular expressions to filter and separate your CSS and JavaScript resources. Any file that's not matched by any of the regular expressions will simply get passed through (and might be used for further templating processes, see below).
+As you see, *shortbread* uses regular expressions to filter and separate your CSS and JavaScript resources. Any file that's not matched by any of the regular expressions will simply get passed through (and might be used for further templating processes, see below). External resources given as URLs (`cssUrl` and `jsUrl`) don't get filtered or validated in any way.
 
 In case you're using a cookie `slot`, the slot name will be added to the fragment file names as in `initial.<slot>.html` and `subsequent.<slot>.html`.
 

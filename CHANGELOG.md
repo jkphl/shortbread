@@ -1,3 +1,7 @@
+## 0.4.0 Feature release (2017-06-18)
+* Updated dependencies
+* Added support for external resources (CSS & JS)
+
 ## 0.3.0 Bugfix release (2017-02-17)
 * Updated dependencies
 * Fixed several loading bugs in Firefox & Internet Explorer

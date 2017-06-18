@@ -1,4 +1,4 @@
-/* global this loadCSS SHORTBREAD_INSTANCE */
+/* global loadCSS SHORTBREAD_INSTANCE */
 (function cssrelpreload(w) {
     // rel=preload support test
     if (!w.loadCSS || !w.onloadCSS) {
@@ -34,19 +34,17 @@
 
     // Load the stylesheets manually if rel=preload is not supported
     if (!rp.support()) {
-        (function () {
+        rp.poly();
+        var run = w.setInterval(rp.poly, 100);
+        var cp = function clearPoly() {
             rp.poly();
-            var run = w.setInterval(rp.poly, 100);
-            var cp = function clearPoly() {
-                rp.poly();
-                w.clearInterval(run);
-            };
-            if (w.addEventListener) {
-                w.addEventListener('DOMContentLoaded', cp);
-            }
-            if (w.attachEvent) {
-                w.attachEvent('onload', cp);
-            }
-        })();
+            w.clearInterval(run);
+        };
+        if (w.addEventListener) {
+            w.addEventListener('DOMContentLoaded', cp);
+        }
+        if (w.attachEvent) {
+            w.attachEvent('onload', cp);
+        }
     }
 })(this);

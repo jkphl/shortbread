@@ -10,8 +10,12 @@ require('mocha');
 
 const js = vinyl.readSync(path.join(__dirname, 'fixtures/script.js'));
 const jsHash = shortbread.createHash(js.contents.toString());
+const jsUrl = 'https://example.com/script.js';
+const jsUrlHash = shortbread.createHash(jsUrl);
 const css = vinyl.readSync(path.join(__dirname, 'fixtures/style.css'));
 const cssHash = shortbread.createHash(css.contents.toString());
+const cssUrl = 'https://example.com/style.css';
+const cssUrlHash = shortbread.createHash(cssUrl);
 
 describe('shortbread()', () => {
     it('should ignore null files', () => {
@@ -35,7 +39,7 @@ describe('shortbread()', () => {
     });
 
     describe('should work with', () => {
-        describe('a single JavaScript resource', () => {
+        describe('a single local JavaScript resource', () => {
             const tests = {
                 'given as Vinyl file': js,
                 'given as Vinyl file array': [js],
@@ -60,10 +64,35 @@ describe('shortbread()', () => {
                 }
             }
         });
+        describe('a single remote JavaScript resource', () => {
+            const tests = {
+                'given as URL': jsUrl,
+                'given as URL array': [jsUrl],
+                'given as URL object': { jsUrl },
+            };
+            for (const t in tests) {
+                if (Object.prototype.hasOwnProperty.call(tests, t)) {
+                    it(t, () => {
+                        const result = shortbread(tests[t]);
+                        should(result.initial).be.not.empty();
+                        should(result.initial).not.endWith('</noscript>');
+                        should(result.initial).not.match(/loadCSS/);
+                        should(result.initial).not.match(/onloadCSS/);
+                        should(result.initial).not.match(/relpreload/);
+                        should(result.initial).match(/function Shortbread/);
+                        should(result.subsequent).equal(`<script src="${jsUrl}"></script>`);
+                        should(result.resources).be.length(1);
+                        should(result.resources[0]).equal(jsUrlHash);
+                        should(result.hash).equal(shortbread.createHash(jsUrlHash));
+                        should(result.cookie).equal('sb');
+                    });
+                }
+            }
+        });
         describe('multiple JavaScript resources', () => {
             const tests = {
-                'given as Vinyl file array': [js, js],
-                'given as Vinyl file object': { one: js, two: js },
+                'given as Vinyl file / URL array': [js, jsUrl],
+                'given as Vinyl file / URL object': { one: js, two: jsUrl },
             };
             for (const t in tests) {
                 if (Object.prototype.hasOwnProperty.call(tests, t)) {
@@ -75,16 +104,16 @@ describe('shortbread()', () => {
                         should(result.initial).not.match(/loadCSS/);
                         should(result.initial).not.match(/onloadCSS/);
                         should(result.initial).not.match(/relpreload/);
-                        should(result.subsequent).equal('<script src="test/fixtures/script.js"></script><script src="test/fixtures/script.js"></script>');
+                        should(result.subsequent).equal(`<script src="test/fixtures/script.js"></script><script src="${jsUrl}"></script>`);
                         should(result.resources).be.length(2);
-                        should(result.resources).deepEqual([jsHash, jsHash]);
-                        should(result.hash).equal(shortbread.createHash(`${jsHash}-${jsHash}`));
+                        should(result.resources).deepEqual([jsHash, jsUrlHash]);
+                        should(result.hash).equal(shortbread.createHash(`${jsHash}-${jsUrlHash}`));
                         should(result.cookie).equal('sb');
                     });
                 }
             }
         });
-        describe('a single CSS resource', () => {
+        describe('a single local CSS resource', () => {
             const tests = {
                 'given as Vinyl file': css,
                 'given as Vinyl file array': [css],
@@ -109,10 +138,11 @@ describe('shortbread()', () => {
                 }
             }
         });
-        describe('multiple CSS resources', () => {
+        describe('a single remote CSS resource', () => {
             const tests = {
-                'given as Vinyl file array': [css, css],
-                'given as Vinyl file object': { one: css, two: css },
+                'given as URL': cssUrl,
+                'given as URL array': [cssUrl],
+                'given as URL object': { cssUrl },
             };
             for (const t in tests) {
                 if (Object.prototype.hasOwnProperty.call(tests, t)) {
@@ -124,10 +154,34 @@ describe('shortbread()', () => {
                         should(result.initial).match(/loadCSS/);
                         should(result.initial).match(/onloadCSS/);
                         should(result.initial).match(/relpreload/);
-                        should(result.subsequent).equal('<link rel="stylesheet" href="test/fixtures/style.css"><link rel="stylesheet" href="test/fixtures/style.css">');
+                        should(result.subsequent).equal(`<link rel="stylesheet" href="${cssUrl}">`);
+                        should(result.resources).be.length(1);
+                        should(result.resources[0]).equal(cssUrlHash);
+                        should(result.hash).equal(shortbread.createHash(cssUrlHash));
+                        should(result.cookie).equal('sb');
+                    });
+                }
+            }
+        });
+        describe('multiple CSS resources', () => {
+            const tests = {
+                'given as Vinyl file / URL array': [css, cssUrl],
+                'given as Vinyl file / URL object': { one: css, two: cssUrl },
+            };
+            for (const t in tests) {
+                if (Object.prototype.hasOwnProperty.call(tests, t)) {
+                    it(t, () => {
+                        const result = shortbread(null, tests[t]);
+                        should(result.initial).be.not.empty();
+                        should(result.initial).match(/function Shortbread/);
+                        should(result.initial).endWith('</noscript>');
+                        should(result.initial).match(/loadCSS/);
+                        should(result.initial).match(/onloadCSS/);
+                        should(result.initial).match(/relpreload/);
+                        should(result.subsequent).equal(`<link rel="stylesheet" href="test/fixtures/style.css"><link rel="stylesheet" href="${cssUrl}">`);
                         should(result.resources).be.length(2);
-                        should(result.resources).deepEqual([cssHash, cssHash]);
-                        should(result.hash).equal(shortbread.createHash(`${cssHash}-${cssHash}`));
+                        should(result.resources).deepEqual([cssHash, cssUrlHash]);
+                        should(result.hash).equal(shortbread.createHash(`${cssHash}-${cssUrlHash}`));
                         should(result.cookie).equal('sb');
                     });
                 }
@@ -306,6 +360,28 @@ describe('shortbread().stream', () => {
                     should(result.subsequent).be.empty();
                     should(result.resources).be.empty();
                     should(result.hash).be.Null();
+                    should(result.cookie).equal('sb');
+                }))
+                .pipe(assert.end(done));
+        });
+
+        it('external resources / URLs', (done) => {
+            const resources = { jsUrl: [jsUrl], cssUrl: [cssUrl], data: true };
+            const resourceHash = shortbread.createHash(`${jsHash}-${jsUrlHash}-${cssHash}-${cssUrlHash}`);
+            gulp.src(['fixtures/*.js', 'fixtures/style.css', 'gulp/gulp.php'], { cwd: __dirname })
+                .pipe(shortbread.stream(null, null, null, resources))
+                .pipe(assert.length(4))
+                .pipe(assert.nth(3, (d) => {
+                    should(path.basename(d.path)).eql('shortbread.json');
+                    const result = JSON.parse(d.contents.toString());
+                    should(result).be.Object();
+                    should(result.initial).not.be.empty();
+                    should(result.subsequent).not.be.empty();
+                    should(result.resources).not.be.empty();
+                    should(result.resources).be.Array();
+                    should(result.resources).be.length(4);
+                    should(result.resources).deepEqual([jsHash, jsUrlHash, cssHash, cssUrlHash]);
+                    should(result).have.property('hash', resourceHash);
                     should(result.cookie).equal('sb');
                 }))
                 .pipe(assert.end(done));
