@@ -1,3 +1,6 @@
+## 0.4.1 Maintenance release (unreleased)
+* Updated dependencies
+
 ## 0.4.0 Feature release (2017-06-18)
 * Updated dependencies
 * Added support for external resources (CSS & JS)
