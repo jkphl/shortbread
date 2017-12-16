@@ -1,5 +1,6 @@
 ## 0.4.1 Maintenance release (unreleased)
 * Updated dependencies
+* Fixed documentation errors
 
 ## 0.4.0 Feature release (2017-06-18)
 * Updated dependencies

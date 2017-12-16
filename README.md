@@ -217,7 +217,7 @@ As mentioned above, *shortbread* will simply pass through any file that's not re
 
 ```js
 const gulp = require('gulp');
-const shortbread = require('.').stream;
+const shortbread = require('shortbread').stream;
 const vinyl = require('vinyl-file');
 const path = require('path');
 const filter = require('gulp-filter');
@@ -256,11 +256,11 @@ The Lo-Dash / Underscore template might look like this:
 
         // If the shortbread cookie is present and matches the expected master hash: It's a subsequent page load
         if (!empty($_COOKIE['<%= cookie %>']) && ($_COOKIE['<%= cookie %>'] === '<%= hash %>')) {
-            include 'initial.main.html';
+            include 'subsequent.main.html';
 
         // Else: It's an initial page load
         } else {
-            include 'subsequent.main.html';
+            include 'initial.main.html';
         }
 
         ?><meta charset="UTF-8">
