@@ -95,7 +95,7 @@ function makeUrlList(val) {
  *
  * @param {File|Array.<File>|Object.<String, File>} js [OPTIONAL] JavaScript resource(s)
  * @param {File|Array.<File>|Object.<String, File>} css [OPTIONAL] CSS resource(s)
- * @param {File} critical [OPTIONAL] Critical CSS resource
+ * @param {File|Array.<File>|Object.<File>} critical [OPTIONAL] Critical CSS / JS resource(s)
  * @param {String} slot [OPTIONAL] Cookie slot
  * @param {String} callback [OPTIONAL] Callback(s)
  * @param {Object} config [OPTIONAL] Extended configuration
@@ -105,9 +105,13 @@ function shortbread(js, css, critical, slot, callback, config) {
     const jsUrls = makeUrlList(js);
     const cssFiles = makeVinylFileList(css);
     const cssUrls = makeUrlList(css);
-    const criticalFile = isVinylFile(critical) ? critical : null;
+    const criticalFiles = makeVinylFileList(critical);
     const cookieSlot = (typeof slot === 'string') ? (slot.trim() || null) : null;
-    const options = Object.assign({ prefix: '' }, config || {});
+    const options = Object.assign({
+        prefix: '',
+        css: ['\\.css$'],
+        js: ['\\.js$'],
+    }, config || {});
     const callbackString = callback ? JSON.stringify(callback) : 'null';
 
     if (typeof options.prefix !== 'string') {
@@ -123,7 +127,8 @@ function shortbread(js, css, critical, slot, callback, config) {
     };
 
     // Return if no resources are given
-    if (!jsFiles.length && !jsUrls.length && !cssFiles.length && !cssUrls.length && !criticalFile) {
+    if (!jsFiles.length && !jsUrls.length && !cssFiles.length && !cssUrls.length
+        && !criticalFiles.length) {
         return result;
     }
 
@@ -152,10 +157,24 @@ function shortbread(js, css, critical, slot, callback, config) {
         result.subsequent += `<script src="${jsUrl}"></script>`;
     });
 
-    // 3.a Critical CSS
-    if (criticalFile) {
-        result.initial += `<style>${criticalFile.contents}</style>`;
-    }
+    // 3.a Critical CSS & JavaScript
+    criticalFiles.forEach((criticalFile) => {
+        // Detect whether it's a JavaScript resource
+        for (const r of options.js) {
+            if (criticalFile.relative.match(r)) {
+                result.initial += `<script>${criticalFile.contents}</script>`;
+                return;
+            }
+        }
+
+        // Detect whether it's a CSS resource
+        for (const r of options.css) {
+            if (criticalFile.relative.match(r)) {
+                result.initial += `<style>${criticalFile.contents}</style>`;
+                return;
+            }
+        }
+    });
 
     let synchronousCSS = '';
     cssFiles.forEach((cssFile) => {
@@ -190,7 +209,7 @@ function shortbread(js, css, critical, slot, callback, config) {
 /**
  * Streaming interface for shortbread
  *
- * @param {File} critical [OPTIONAL] Critical CSS resource
+ * @param {File} critical [OPTIONAL] Critical CSS or JavaScript resource(s)
  * @param {String} slot [OPTIONAL] Cookie slot (optional)
  * @param {String} callback [OPTIONAL] Callback(s)
  * @param {Object} config [OPTIONAL] Extended configuration
@@ -210,9 +229,9 @@ shortbread.stream = function stream(critical, slot, callback, config) {
     options.js = makeRegexList(options.js);
     options.data = !!options.data;
 
-    // Validate the critical CSS
-    if (critical && !isVinylFile(critical)) {
-        throw new Error('shortbread.stream: Critical CSS must be a Vinyl object');
+    // Validate the critical CSS or JavaScript resource(s)
+    if (critical && !makeVinylFileList(critical).length) {
+        throw new Error('shortbread.stream: Critical resources must be single a Vinyl object, a Vinyl object array or object');
     }
 
     // Prepare the fragment paths

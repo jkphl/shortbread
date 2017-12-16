@@ -2,6 +2,7 @@
 * Updated dependencies
 * Fixed documentation errors
 * Dropped support for Node.js v4
+* Added support for multiple critical resources (CSS & JavaScript)
 
 ## 0.4.0 Feature release (2017-06-18)
 * Updated dependencies

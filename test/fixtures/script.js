@@ -8,3 +8,5 @@ function allLoaded() {
 }
 
 document.documentElement.className += ' js';
+
+/* criticaljs (don't remove, used for testing) */

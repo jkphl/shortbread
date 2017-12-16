@@ -204,13 +204,71 @@ describe('shortbread()', () => {
     });
 
     describe('should support options', () => {
-        it('critical CSS', () => {
-            const criticalcss = vinyl.readSync(path.join(__dirname, 'fixtures/critical.css'));
-            const result = shortbread(null, null, criticalcss);
-            should(result.initial).be.not.empty();
-            should(result.initial).startWith('<style>');
-            should(result.initial).endWith('</style>');
-            should(result.initial).match(/criticalcss/);
+        const criticalcss = vinyl.readSync(path.join(__dirname, 'fixtures/critical.css'));
+        const criticaljs = vinyl.readSync(path.join(__dirname, 'fixtures/script.js'));
+        describe('Critical CSS', () => {
+            it('as Vinyl file', () => {
+                const result = shortbread(null, null, criticalcss);
+                should(result.initial).be.not.empty();
+                should(result.initial).startWith('<style>');
+                should(result.initial).endWith('</style>');
+                should(result.initial).match(/criticalcss/);
+            });
+            it('as Vinyl file array', () => {
+                const result = shortbread(null, null, [criticalcss]);
+                should(result.initial).be.not.empty();
+                should(result.initial).startWith('<style>');
+                should(result.initial).endWith('</style>');
+                should(result.initial).match(/criticalcss/);
+            });
+            it('as Vinyl file object', () => {
+                const result = shortbread(null, null, { critical: criticalcss });
+                should(result.initial).be.not.empty();
+                should(result.initial).startWith('<style>');
+                should(result.initial).endWith('</style>');
+                should(result.initial).match(/criticalcss/);
+            });
+        });
+        describe('Critical JavaScript', () => {
+            it('as Vinyl file', () => {
+                const result = shortbread(null, null, criticaljs);
+                should(result.initial).be.not.empty();
+                should(result.initial).startWith('<script>');
+                should(result.initial).endWith('</script>');
+                should(result.initial).match(/criticaljs/);
+            });
+            it('as Vinyl file array', () => {
+                const result = shortbread(null, null, [criticaljs]);
+                should(result.initial).be.not.empty();
+                should(result.initial).startWith('<script>');
+                should(result.initial).endWith('</script>');
+                should(result.initial).match(/criticaljs/);
+            });
+            it('as Vinyl file object', () => {
+                const result = shortbread(null, null, { critical: criticaljs });
+                should(result.initial).be.not.empty();
+                should(result.initial).startWith('<script>');
+                should(result.initial).endWith('</script>');
+                should(result.initial).match(/criticaljs/);
+            });
+        });
+        describe('Critical CSS & JavaScript', () => {
+            it('as Vinyl files array', () => {
+                const result = shortbread(null, null, [criticalcss, criticaljs]);
+                should(result.initial).be.not.empty();
+                should(result.initial).startWith('<style>');
+                should(result.initial).endWith('</script>');
+                should(result.initial).match(/criticalcss/);
+                should(result.initial).match(/criticaljs/);
+            });
+            it('as Vinyl files object', () => {
+                const result = shortbread(null, null, { css: criticalcss, js: criticaljs });
+                should(result.initial).be.not.empty();
+                should(result.initial).startWith('<style>');
+                should(result.initial).endWith('</script>');
+                should(result.initial).match(/criticalcss/);
+                should(result.initial).match(/criticaljs/);
+            });
         });
         it('cookie slot', () => {
             const result = shortbread(null, null, null, 'test');
@@ -244,7 +302,7 @@ describe('shortbread().stream', () => {
     });
 
     it('should error on invalid critical CSS', () => {
-        shortbread.stream.bind(null, { invalid: true }).should.throw('shortbread.stream: Critical CSS must be a Vinyl object');
+        shortbread.stream.bind(null, { invalid: true }).should.throw('shortbread.stream: Critical resources must be single a Vinyl object, a Vinyl object array or object');
     });
 
     it('should error on streamed file', (done) => {
@@ -297,6 +355,23 @@ describe('shortbread().stream', () => {
     });
 
     describe('should support options', () => {
+        const criticalcss = vinyl.readSync(path.join(__dirname, 'fixtures/critical.css'));
+        const criticaljs = vinyl.readSync(path.join(__dirname, 'fixtures/script.js'));
+        it('critical CSS & JavaScript', (done) => {
+            gulp.src(['fixtures/*.js', 'fixtures/style.css'], { cwd: __dirname })
+                .pipe(shortbread.stream([criticalcss, criticaljs]))
+                .pipe(assert.length(2))
+                .pipe(assert.nth(0, (d) => {
+                    should(path.basename(d.path)).eql('initial.html');
+                    should(d.contents.toString()).match(/criticalcss/);
+                    should(d.contents.toString()).match(/criticaljs/);
+                }))
+                .pipe(assert.nth(1, (d) => {
+                    should(path.basename(d.path)).eql('subsequent.html');
+                }))
+                .pipe(assert.end(done));
+        });
+
         it('file extension filters', (done) => {
             const jsxHash = shortbread.createHash(fs.readFileSync(path.join(__dirname, 'fixtures/helloworld.jsx')));
             const scssHash = shortbread.createHash(fs.readFileSync(path.join(__dirname, 'fixtures/dummy.scss')));
