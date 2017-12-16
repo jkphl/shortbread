@@ -1,4 +1,4 @@
-## 0.5.0 Feature release (unreleased)
+## 0.5.0 Feature release (2017-12-16)
 * Updated dependencies
 * Fixed documentation errors
 * Dropped support for Node.js v4

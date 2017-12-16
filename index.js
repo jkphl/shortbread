@@ -76,8 +76,8 @@ function makeVinylFileList(val) {
  */
 function makeRegexList(val) {
     return makeList(val)
-        .filter(v => ((typeof v === 'string' && v.trim().length) || (typeof v === 'object' && v.constructor === RegExp)))
-        .map(v => (typeof v === 'string' ? new RegExp(v) : v));
+    .filter(v => ((typeof v === 'string' && v.trim().length) || (typeof v === 'object' && v.constructor === RegExp)))
+    .map(v => (typeof v === 'string' ? new RegExp(v) : v));
 }
 
 /**
@@ -149,32 +149,36 @@ function shortbread(js, css, critical, slot, callback, config) {
         result.resources.push(resourceHash);
         result.initial += `<script src="${options.prefix}${jsFile.relative}" id="${resourceHash}" async defer onreadystatechange="SHORTBREAD_INSTANCE.onloadScript(this)" onload="SHORTBREAD_INSTANCE.onloadScript(this)"></script>`;
         result.subsequent += `<script src="${options.prefix}${jsFile.relative}"></script>`;
-    });
+    })
+    ;
     jsUrls.forEach((jsUrl) => {
         const resourceHash = shortbread.createHash(jsUrl);
         result.resources.push(resourceHash);
         result.initial += `<script src="${jsUrl}" id="${resourceHash}" async defer onreadystatechange="SHORTBREAD_INSTANCE.onloadScript(this)" onload="SHORTBREAD_INSTANCE.onloadScript(this)"></script>`;
         result.subsequent += `<script src="${jsUrl}"></script>`;
-    });
+    })
+    ;
 
     // 3.a Critical CSS & JavaScript
     criticalFiles.forEach((criticalFile) => {
         // Detect whether it's a JavaScript resource
-        for (const r of options.js) {
+        for (const r of options.js
+) {
             if (criticalFile.relative.match(r)) {
                 result.initial += `<script>${criticalFile.contents}</script>`;
                 return;
             }
         }
 
-        // Detect whether it's a CSS resource
+    // Detect whether it's a CSS resource
         for (const r of options.css) {
             if (criticalFile.relative.match(r)) {
                 result.initial += `<style>${criticalFile.contents}</style>`;
                 return;
             }
         }
-    });
+    })
+    ;
 
     let synchronousCSS = '';
     cssFiles.forEach((cssFile) => {
@@ -182,13 +186,15 @@ function shortbread(js, css, critical, slot, callback, config) {
         result.resources.push(resourceHash);
         result.initial += `<link rel="preload" href="${options.prefix}${cssFile.relative}" id="${resourceHash}" as="style" onload="this.rel='stylesheet';SHORTBREAD_INSTANCE.loaded(this.id)">`;
         synchronousCSS += `<link rel="stylesheet" href="${options.prefix}${cssFile.relative}">`;
-    });
+    })
+    ;
     cssUrls.forEach((cssUrl) => {
         const resourceHash = shortbread.createHash(cssUrl);
         result.resources.push(resourceHash);
         result.initial += `<link rel="preload" href="${cssUrl}" id="${resourceHash}" as="style" onload="this.rel='stylesheet';SHORTBREAD_INSTANCE.loaded(this.id)">`;
         synchronousCSS += `<link rel="stylesheet" href="${cssUrl}">`;
-    });
+    })
+    ;
     if (synchronousCSS.length) {
         result.initial += `<noscript>${synchronousCSS}</noscript>`;
         result.subsequent += synchronousCSS;
@@ -209,10 +215,10 @@ function shortbread(js, css, critical, slot, callback, config) {
 /**
  * Streaming interface for shortbread
  *
- * @param {File} critical [OPTIONAL] Critical CSS or JavaScript resource(s)
- * @param {String} slot [OPTIONAL] Cookie slot (optional)
- * @param {String} callback [OPTIONAL] Callback(s)
- * @param {Object} config [OPTIONAL] Extended configuration
+ * @param {File|Array.<File>|Object.<File>} critical    [OPTIONAL] Critical CSS / JS resource(s)
+ * @param {String} slot                                 [OPTIONAL] Cookie slot (optional)
+ * @param {String} callback                             [OPTIONAL] Callback(s)
+ * @param {Object} config                               [OPTIONAL] Extended configuration
  */
 shortbread.stream = function stream(critical, slot, callback, config) {
     const options = Object.assign({
@@ -294,8 +300,17 @@ shortbread.stream = function stream(critical, slot, callback, config) {
      * @param {Function} cb Callback
      */
     function endStream(cb) {
-        const result = shortbread(js, css, critical, cookieSlot, callback,
-            { prefix: options.prefix });
+        const result = shortbread(
+            js,
+            css,
+            critical,
+            cookieSlot,
+            callback,
+            {
+                prefix: options.prefix,
+                css: options.css,
+                js: options.js,
+            });
 
         // If resources have been specified
         if (result.resources.length) {
@@ -319,7 +334,8 @@ shortbread.stream = function stream(critical, slot, callback, config) {
             });
             fileWithData.data = result;
             this.push(fileWithData);
-        });
+        })
+        ;
 
         // Create a JSON file with the shortbread result
         if (options.data) {
