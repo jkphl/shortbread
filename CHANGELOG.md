@@ -1,4 +1,4 @@
-## 0.6.0 Feature release (unreleased)
+## 0.6.0 Feature release (2018-08-04)
 * Updated dependencies
 * Include resource paths in result object
 
