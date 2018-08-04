@@ -121,7 +121,7 @@ function shortbread(js, css, critical, slot, callback, config) {
     const result = {
         initial: '',
         subsequent: '',
-        resources: [],
+        resources: {},
         hash: null,
         cookie: `sb${cookieSlot ? `_${cookieSlot}` : ''}`,
     };
@@ -146,14 +146,14 @@ function shortbread(js, css, critical, slot, callback, config) {
     // 2. JavaScript resources
     jsFiles.forEach((jsFile) => {
         const resourceHash = shortbread.createHash(jsFile.contents.toString());
-        result.resources.push(resourceHash);
-        result.initial += `<script src="${options.prefix}${jsFile.relative}" id="${resourceHash}" async defer onreadystatechange="SHORTBREAD_INSTANCE.onloadScript(this)" onload="SHORTBREAD_INSTANCE.onloadScript(this)"></script>`;
+        result.resources[resourceHash] = `${options.prefix}${jsFile.relative}`;
+        result.initial += `<script src="${result.resources[resourceHash]}" id="${resourceHash}" async defer onreadystatechange="SHORTBREAD_INSTANCE.onloadScript(this)" onload="SHORTBREAD_INSTANCE.onloadScript(this)"></script>`;
         result.subsequent += `<script src="${options.prefix}${jsFile.relative}"></script>`;
     })
     ;
     jsUrls.forEach((jsUrl) => {
         const resourceHash = shortbread.createHash(jsUrl);
-        result.resources.push(resourceHash);
+        result.resources[resourceHash] = jsUrl;
         result.initial += `<script src="${jsUrl}" id="${resourceHash}" async defer onreadystatechange="SHORTBREAD_INSTANCE.onloadScript(this)" onload="SHORTBREAD_INSTANCE.onloadScript(this)"></script>`;
         result.subsequent += `<script src="${jsUrl}"></script>`;
     })
@@ -183,14 +183,14 @@ function shortbread(js, css, critical, slot, callback, config) {
     let synchronousCSS = '';
     cssFiles.forEach((cssFile) => {
         const resourceHash = shortbread.createHash(cssFile.contents.toString());
-        result.resources.push(resourceHash);
-        result.initial += `<link rel="preload" href="${options.prefix}${cssFile.relative}" id="${resourceHash}" as="style" onload="this.rel='stylesheet';SHORTBREAD_INSTANCE.loaded(this.id)">`;
-        synchronousCSS += `<link rel="stylesheet" href="${options.prefix}${cssFile.relative}">`;
+        result.resources[resourceHash] = `${options.prefix}${cssFile.relative}`;
+        result.initial += `<link rel="preload" href="${result.resources[resourceHash]}" id="${resourceHash}" as="style" onload="this.rel='stylesheet';SHORTBREAD_INSTANCE.loaded(this.id)">`;
+        synchronousCSS += `<link rel="stylesheet" href="${result.resources[resourceHash]}">`;
     })
     ;
     cssUrls.forEach((cssUrl) => {
         const resourceHash = shortbread.createHash(cssUrl);
-        result.resources.push(resourceHash);
+        result.resources[resourceHash] = cssUrl;
         result.initial += `<link rel="preload" href="${cssUrl}" id="${resourceHash}" as="style" onload="this.rel='stylesheet';SHORTBREAD_INSTANCE.loaded(this.id)">`;
         synchronousCSS += `<link rel="stylesheet" href="${cssUrl}">`;
     })
@@ -201,9 +201,10 @@ function shortbread(js, css, critical, slot, callback, config) {
     }
 
     // Calculate the master hash
-    result.hash = result.resources.length ? shortbread.createHash(result.resources.join('-')) : null;
+    const resourceHashes = Object.keys(result.resources);
+    result.hash = resourceHashes.length ? shortbread.createHash(resourceHashes.join('-')) : null;
 
-    if (result.resources.length) {
+    if (resourceHashes.length) {
         initial += `var SHORTBREAD_INSTANCE = new Shortbread(${JSON.stringify(result.resources)}, '${result.hash}', ${JSON.stringify(cookieSlot)}, ${callbackString});`;
     }
     result.initial = `${initial.length ? `<script>"use strict";${uglify.minify(initial).code}</script>` : ''}${result.initial}`;
@@ -313,7 +314,7 @@ shortbread.stream = function stream(critical, slot, callback, config) {
             });
 
         // If resources have been specified
-        if (result.resources.length) {
+        if (Object.keys(result.resources).length) {
             // Create the initial page load resource
             this.push(new Vinyl({
                 path: options.initial,

@@ -79,7 +79,10 @@ The return value will be an object with the following properties:
 {
     initial: '<script>...</noscript>',      // Initial page load fragment
     subsequent: '<script>...</link>',       // Subsequent page load fragment
-    resources: ['422a6fc6', '60062743'],    // Single resource hashes
+    resources: {                            // Single resource and corresponding hashes
+        '422a6fc6': 'path/to/resource/1',
+        '60062743': 'path/to/resource/2'
+    },
     hash: 'df5bf8f7',                       // Cookie value when all resources are loaded
     cookie: 'sb_main'                       // Cookie name (here: including "main" slot)
 }

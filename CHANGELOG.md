@@ -1,5 +1,6 @@
 ## 0.6.0 Feature release (unreleased)
 * Updated dependencies
+* Include resource paths in result object
 
 ## 0.5.0 Feature release (2017-12-16)
 * Updated dependencies

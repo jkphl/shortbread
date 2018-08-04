@@ -23,7 +23,7 @@ describe('shortbread()', () => {
         should(result).be.Object();
         should(result.initial).be.empty();
         should(result.subsequent).be.empty();
-        should(result.resources).be.empty();
+        should(Object.keys(result.resources)).be.empty();
         should(result.hash).be.null();
         should(result.cookie).equal('sb');
     });
@@ -33,7 +33,7 @@ describe('shortbread()', () => {
         should(result).be.Object();
         should(result.initial).be.empty();
         should(result.subsequent).be.empty();
-        should(result.resources).be.empty();
+        should(Object.keys(result.resources)).be.empty();
         should(result.hash).be.null();
         should(result.cookie).equal('sb');
     });
@@ -56,8 +56,8 @@ describe('shortbread()', () => {
                         should(result.initial).not.match(/relpreload/);
                         should(result.initial).match(/function Shortbread/);
                         should(result.subsequent).equal('<script src="test/fixtures/script.js"></script>');
-                        should(result.resources).be.length(1);
-                        should(result.resources[0]).equal(jsHash);
+                        should(Object.keys(result.resources)).be.length(1);
+                        should(Object.keys(result.resources).pop()).equal(jsHash);
                         should(result.hash).equal(shortbread.createHash(jsHash));
                         should(result.cookie).equal('sb');
                     });
@@ -81,8 +81,8 @@ describe('shortbread()', () => {
                         should(result.initial).not.match(/relpreload/);
                         should(result.initial).match(/function Shortbread/);
                         should(result.subsequent).equal(`<script src="${jsUrl}"></script>`);
-                        should(result.resources).be.length(1);
-                        should(result.resources[0]).equal(jsUrlHash);
+                        should(Object.keys(result.resources)).be.length(1);
+                        should(Object.keys(result.resources).pop()).equal(jsUrlHash);
                         should(result.hash).equal(shortbread.createHash(jsUrlHash));
                         should(result.cookie).equal('sb');
                     });
@@ -105,8 +105,8 @@ describe('shortbread()', () => {
                         should(result.initial).not.match(/onloadCSS/);
                         should(result.initial).not.match(/relpreload/);
                         should(result.subsequent).equal(`<script src="test/fixtures/script.js"></script><script src="${jsUrl}"></script>`);
-                        should(result.resources).be.length(2);
-                        should(result.resources).deepEqual([jsHash, jsUrlHash]);
+                        should(Object.keys(result.resources)).be.length(2);
+                        should(Object.keys(result.resources)).deepEqual([jsHash, jsUrlHash]);
                         should(result.hash).equal(shortbread.createHash(`${jsHash}-${jsUrlHash}`));
                         should(result.cookie).equal('sb');
                     });
@@ -130,8 +130,8 @@ describe('shortbread()', () => {
                         should(result.initial).match(/onloadCSS/);
                         should(result.initial).match(/relpreload/);
                         should(result.subsequent).equal('<link rel="stylesheet" href="test/fixtures/style.css">');
-                        should(result.resources).be.length(1);
-                        should(result.resources[0]).equal(cssHash);
+                        should(Object.keys(result.resources)).be.length(1);
+                        should(Object.keys(result.resources).pop()).equal(cssHash);
                         should(result.hash).equal(shortbread.createHash(cssHash));
                         should(result.cookie).equal('sb');
                     });
@@ -155,8 +155,8 @@ describe('shortbread()', () => {
                         should(result.initial).match(/onloadCSS/);
                         should(result.initial).match(/relpreload/);
                         should(result.subsequent).equal(`<link rel="stylesheet" href="${cssUrl}">`);
-                        should(result.resources).be.length(1);
-                        should(result.resources[0]).equal(cssUrlHash);
+                        should(Object.keys(result.resources)).be.length(1);
+                        should(Object.keys(result.resources).pop()).equal(cssUrlHash);
                         should(result.hash).equal(shortbread.createHash(cssUrlHash));
                         should(result.cookie).equal('sb');
                     });
@@ -179,8 +179,8 @@ describe('shortbread()', () => {
                         should(result.initial).match(/onloadCSS/);
                         should(result.initial).match(/relpreload/);
                         should(result.subsequent).equal(`<link rel="stylesheet" href="test/fixtures/style.css"><link rel="stylesheet" href="${cssUrl}">`);
-                        should(result.resources).be.length(2);
-                        should(result.resources).deepEqual([cssHash, cssUrlHash]);
+                        should(Object.keys(result.resources)).be.length(2);
+                        should(Object.keys(result.resources)).deepEqual([cssHash, cssUrlHash]);
                         should(result.hash).equal(shortbread.createHash(`${cssHash}-${cssUrlHash}`));
                         should(result.cookie).equal('sb');
                     });
@@ -196,8 +196,8 @@ describe('shortbread()', () => {
             should(result.initial).match(/onloadCSS/);
             should(result.initial).match(/relpreload/);
             should(result.subsequent).equal('<script src="test/fixtures/script.js"></script><link rel="stylesheet" href="test/fixtures/style.css">');
-            should(result.resources).be.length(2);
-            should(result.resources).deepEqual([jsHash, cssHash]);
+            should(Object.keys(result.resources)).be.length(2);
+            should(Object.keys(result.resources)).eql([jsHash, cssHash]);
             should(result.hash).equal(shortbread.createHash(`${jsHash}-${cssHash}`));
             should(result.cookie).equal('sb');
         });
@@ -302,7 +302,8 @@ describe('shortbread().stream', () => {
     });
 
     it('should error on invalid critical CSS', () => {
-        shortbread.stream.bind(null, { invalid: true }).should.throw('shortbread.stream: Critical resources must be single a Vinyl object, a Vinyl object array or object');
+        shortbread.stream.bind(null, { invalid: true }).should
+            .throw('shortbread.stream: Critical resources must be single a Vinyl object, a Vinyl object array or object');
     });
 
     it('should error on streamed file', (done) => {
@@ -323,7 +324,7 @@ describe('shortbread().stream', () => {
                 should(d.data).be.Object();
                 should(d.data).have.property('initial', '');
                 should(d.data).have.property('subsequent', '');
-                should(d.data).have.property('resources', []);
+                should(d.data).have.property('resources', {});
                 should(d.data).have.property('hash', null);
                 should(d.data).have.property('cookie', 'sb');
             }))
@@ -345,9 +346,9 @@ describe('shortbread().stream', () => {
                 should(d.data).be.Object();
                 should(d.data.initial).be.not.empty();
                 should(d.data.subsequent).be.not.empty();
-                should(d.data.resources).be.Array();
-                should(d.data.resources).be.length(2);
-                should(d.data.resources).deepEqual([jsHash, cssHash]);
+                should(Object.keys(d.data.resources)).be.Array();
+                should(Object.keys(d.data.resources)).be.length(2);
+                should(Object.keys(d.data.resources)).deepEqual([jsHash, cssHash]);
                 should(d.data).have.property('hash', shortbread.createHash(`${jsHash}-${cssHash}`));
                 should(d.data).have.property('cookie', 'sb');
             }))
@@ -379,9 +380,9 @@ describe('shortbread().stream', () => {
             function assertData(d) {
                 if ((path.extname(d.path) !== '.scss') && (path.extname(d.path) !== '.jsx')) {
                     should(d.data).be.Object();
-                    should(d.data.resources).be.Array();
-                    should(d.data.resources).be.length(2);
-                    should(d.data.resources).deepEqual([jsxHash, scssHash]);
+                    should(Object.keys(d.data.resources)).be.Array();
+                    should(Object.keys(d.data.resources)).be.length(2);
+                    should(Object.keys(d.data.resources)).deepEqual([jsxHash, scssHash]);
                     should(d.data).have.property('hash', shortbread.createHash(`${jsxHash}-${scssHash}`));
                     should(d.data).have.property('cookie', 'sb');
                 }
@@ -433,7 +434,7 @@ describe('shortbread().stream', () => {
                     should(result).be.Object();
                     should(result.initial).be.empty();
                     should(result.subsequent).be.empty();
-                    should(result.resources).be.empty();
+                    should(Object.keys(result.resources)).be.empty();
                     should(result.hash).be.Null();
                     should(result.cookie).equal('sb');
                 }))
@@ -453,9 +454,10 @@ describe('shortbread().stream', () => {
                     should(result.initial).not.be.empty();
                     should(result.subsequent).not.be.empty();
                     should(result.resources).not.be.empty();
-                    should(result.resources).be.Array();
-                    should(result.resources).be.length(4);
-                    should(result.resources).deepEqual([jsHash, jsUrlHash, cssHash, cssUrlHash]);
+                    should(Object.keys(result.resources)).be.Array();
+                    should(Object.keys(result.resources)).be.length(4);
+                    should(Object.keys(result.resources))
+                        .deepEqual([jsHash, jsUrlHash, cssHash, cssUrlHash]);
                     should(result).have.property('hash', resourceHash);
                     should(result.cookie).equal('sb');
                 }))
