@@ -1,11 +1,11 @@
 /* global describe it */
-const shortbread = require('../');
 const should = require('should');
 const assert = require('stream-assert');
 const path = require('path');
 const fs = require('fs');
 const vinyl = require('vinyl-file');
 const gulp = require('gulp');
+const shortbread = require('../');
 require('mocha');
 
 const js = vinyl.readSync(path.join(__dirname, 'fixtures/script.js'));
