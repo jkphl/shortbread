@@ -1,3 +1,6 @@
+## 0.6.2 Bugfix release (2018-01-12)
+* Fix broken PHP test suite
+
 ## 0.6.1 Maintenance release (2018-01-12)
 * Updated dependencies
 
