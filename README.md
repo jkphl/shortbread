@@ -35,14 +35,16 @@ Based on these values, *shortbread* creates **two HTML fragments** to be include
 
 The first page load HTML fragment will do the following:
 
-1. It inlines a small JavaScript (including parts of [Filament Group's loadCSS](https://github.com/filamentgroup/loadCSS)) which is needed for creating a client-side *shortbread* instance and performing the following steps.
-2. It loads your JavaScript resources [with `async` and `defer`](https://www.igvita.com/2014/05/20/script-injected-async-scripts-considered-harmful/) and registers them with *shortbread* once they finished loading.
-3. It inlines your critical CSS and / or JavaScript resources (if any).
-4. It loads your CSS resources [with `rel=preload`](https://www.w3.org/TR/2015/WD-preload-20150721/) (polyfilled if necessary) and registers them with *shortbread* once they finished loading.
+1. It inlines a small JavaScript (including [prelink](https://github.com/jkphl/prelink)) which is needed for creating a client-side *shortbread* instance and performing the following steps.
+2. It inlines your critical CSS and / or JavaScript resources (if any).
+3. It loads your non-critical JavaScript resources [with `async` and `defer`](https://www.igvita.com/2014/05/20/script-injected-async-scripts-considered-harmful/) and registers them with *shortbread* once they finished loading. If a JavaScript resource is listed as both critical (inlined) and non-critical (external), the non-critical instance is loaded [with `rel=prefetch`](https://www.w3.org/TR/resource-hints/#prefetch) (polyfilled if necessary) to prevent double evaluation.
+4. It loads your CSS resources [with `rel=preload`](https://www.w3.org/TR/preload/) (polyfilled if necessary) and registers them with *shortbread* once they finished loading.
 6. It wraps up with a `<noscript>` fallback for (synchronously) loading at least the CSS resources in case there's no JavaScript available.
-7. As soon as all CSS and JavaScript resources finished loading, *shortbread*
+7. As soon as all CSS and JavaScript resources finished loading\*, *shortbread*
     * sets a cookie to let your server distinguish between initial and subsequent page loads and
-    * finally runs the JavaScript callback you provided (if any).
+    * runs the final JavaScript callback you provided (if any).
+
+\* Please be aware that, depending on the browser in use, the non-critical version of hybrid JavaScript resources (see 3) may or may not have finished loading when the callback gets triggered, as e.g. Internet Explorer 11 (which has `rel=prefetch` support) doesn't fire an `onload` in this case. In the worst case, the resource has to be loaded in a synchronous manner during the second page load.
 
 
 ### Subsequent page loads
@@ -306,7 +308,7 @@ Please refer to the [changelog](CHANGELOG.md) for a complete release history.
 
 Legal
 -----
-Copyright © 2017 Joschi Kuphal <joschi@kuphal.net> / [@jkphl](https://twitter.com/jkphl). *shortbread* is licensed under the terms of the [MIT license](LICENSE.txt).
+Copyright © 2019 Joschi Kuphal <joschi@kuphal.net> / [@jkphl](https://twitter.com/jkphl). *shortbread* is licensed under the terms of the [MIT license](LICENSE.txt).
 
 [npm-url]: https://npmjs.org/package/shortbread
 [npm-image]: https://badge.fury.io/js/shortbread.svg

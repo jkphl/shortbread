@@ -6,7 +6,7 @@
  * @see https://github.com/jkphl/shortbread
  *
  * @author Joschi Kuphal <joschi@kuphal.net> (https://github.com/jkphl)
- * @copyright © 2017 Joschi Kuphal
+ * @copyright © 2019 Joschi Kuphal
  * @license MIT https://raw.github.com/jkphl/gulp-cache-bust-meta/master/LICENSE
  */
 
@@ -17,15 +17,16 @@ const path = require('path');
 const filter = require('gulp-filter');
 const template = require('gulp-template');
 
-gulp.task('default', () => {
-    const critical = vinyl.readSync('test/fixtures/critical.css');
+gulp.task('default', (done) => {
+    const criticalJS = vinyl.readSync('test/fixtures/critical.js');
+    const criticalCSS = vinyl.readSync('test/fixtures/critical.css');
     const tmpl = filter(['**/*.php'], { restore: true });
 
     // Start with your JavaScript, CSS and template resources
-    gulp.src(['**/fixtures/script.js', '**/fixtures/style.css', 'gulp/*.php'], { cwd: path.join(__dirname, 'test') })
+    gulp.src(['**/fixtures/*.js', '**/fixtures/style.css', 'gulp/*.php'], { cwd: path.join(__dirname, 'test') })
 
         // Run shortbread
-        .pipe(shortbread(critical, 'main', null, { prefix: '/' }))
+        .pipe(shortbread([criticalJS, criticalCSS], 'main', null, { prefix: '/' }))
 
         // Filter all but the template file
         .pipe(tmpl)
@@ -38,4 +39,6 @@ gulp.task('default', () => {
 
         // Write the files to their destination
         .pipe(gulp.dest('./tmp'));
+
+    done();
 });

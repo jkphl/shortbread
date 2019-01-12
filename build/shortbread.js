@@ -1,15 +1,25 @@
 /* eslint-disable no-param-reassign */
 
 /**
+ * shortbread is an asynchronous, non-blocking loading pattern for CSS and JavaScript resources
+ *
+ * @see https://github.com/jkphl/shortbread
+ *
+ * @author Joschi Kuphal <joschi@kuphal.net> (https://github.com/jkphl)
+ * @copyright © 2019 Joschi Kuphal
+ * @license MIT https://raw.github.com/jkphl/gulp-cache-bust-meta/master/LICENSE
+ */
+
+/**
  * Shortbread constructor
  *
- * @param {Array} resources Expected resources
+ * @param {Object} resources Expected resources
  * @param {String} master Master hash
  * @param {String} slot Cookie slot
  * @param {Function|String} callback Callback (name)
  */
 function Shortbread() {
-    var resources = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+    var resources = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var master = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     var slot = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
     var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
@@ -17,7 +27,7 @@ function Shortbread() {
     /**
      * Expected resources
      *
-     * @type {Array}
+     * @type {Object}
      */
     this.res = resources;
     /**
@@ -58,17 +68,17 @@ Shortbread.prototype.onloadScript = function onloadScript(script) {
  * @param {string} resourceId Resource ID
  */
 Shortbread.prototype.loaded = function loaded(resourceId) {
-    var res = [];
-    var r = 0;
-    for (; r < this.res.length; ++r) {
-        if (this.res[r] !== resourceId) {
-            res.push(this.res[r]);
+    var required = 0;
+    var res = {};
+    for (var r in this.res) {
+        if (r !== resourceId) {
+            required += res[r] = this.res[r];
         }
     }
     this.res = res;
 
     // If all expected resources have been loaded
-    if (!this.res.length) {
+    if (!required) {
         // If a cookie should be set
         if (this.hash) {
             var expires = new Date(+new Date() + 604800000).toUTCString();

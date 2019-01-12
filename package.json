@@ -1,6 +1,6 @@
 {
   "name": "shortbread",
-  "version": "0.6.2",
+  "version": "1.0.0",
   "description": "Asynchronous, non-blocking loading pattern for CSS and JavaScript resources",
   "main": "index.js",
   "scripts": {
@@ -36,9 +36,9 @@
   "homepage": "https://github.com/jkphl/shortbread#readme",
   "dependencies": {
     "crypto": "1.0.1",
-    "fg-loadcss": "^2.1.0",
     "is-url": "^1.2.4",
     "npm-check-updates": "^2.15.0",
+    "prelink": "github:jkphl/prelink",
     "through2": "^3.0.0",
     "uglify-js": "^3.4.9",
     "vinyl": "^2.2.0"

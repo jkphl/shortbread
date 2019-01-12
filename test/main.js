@@ -51,9 +51,7 @@ describe('shortbread()', () => {
                         const result = shortbread(tests[t]);
                         should(result.initial).be.not.empty();
                         should(result.initial).not.endWith('</noscript>');
-                        should(result.initial).not.match(/loadCSS/);
-                        should(result.initial).not.match(/onloadCSS/);
-                        should(result.initial).not.match(/relpreload/);
+                        should(result.initial).not.match(/prelink/);
                         should(result.initial).match(/function Shortbread/);
                         should(result.subsequent).equal('<script src="test/fixtures/script.js"></script>');
                         should(Object.keys(result.resources)).be.length(1);
@@ -126,9 +124,7 @@ describe('shortbread()', () => {
                         should(result.initial).be.not.empty();
                         should(result.initial).match(/function Shortbread/);
                         should(result.initial).endWith('</noscript>');
-                        should(result.initial).match(/loadCSS/);
-                        should(result.initial).match(/onloadCSS/);
-                        should(result.initial).match(/relpreload/);
+                        should(result.initial).match(/data-prelink/);
                         should(result.subsequent).equal('<link rel="stylesheet" href="test/fixtures/style.css">');
                         should(Object.keys(result.resources)).be.length(1);
                         should(Object.keys(result.resources).pop()).equal(cssHash);
@@ -151,9 +147,7 @@ describe('shortbread()', () => {
                         should(result.initial).be.not.empty();
                         should(result.initial).match(/function Shortbread/);
                         should(result.initial).endWith('</noscript>');
-                        should(result.initial).match(/loadCSS/);
-                        should(result.initial).match(/onloadCSS/);
-                        should(result.initial).match(/relpreload/);
+                        should(result.initial).match(/data-prelink/);
                         should(result.subsequent).equal(`<link rel="stylesheet" href="${cssUrl}">`);
                         should(Object.keys(result.resources)).be.length(1);
                         should(Object.keys(result.resources).pop()).equal(cssUrlHash);
@@ -175,9 +169,7 @@ describe('shortbread()', () => {
                         should(result.initial).be.not.empty();
                         should(result.initial).match(/function Shortbread/);
                         should(result.initial).endWith('</noscript>');
-                        should(result.initial).match(/loadCSS/);
-                        should(result.initial).match(/onloadCSS/);
-                        should(result.initial).match(/relpreload/);
+                        should(result.initial).match(/data-prelink/);
                         should(result.subsequent).equal(`<link rel="stylesheet" href="test/fixtures/style.css"><link rel="stylesheet" href="${cssUrl}">`);
                         should(Object.keys(result.resources)).be.length(2);
                         should(Object.keys(result.resources)).deepEqual([cssHash, cssUrlHash]);
@@ -192,9 +184,7 @@ describe('shortbread()', () => {
             should(result.initial).be.not.empty();
             should(result.initial).match(/function Shortbread/);
             should(result.initial).endWith('</noscript>');
-            should(result.initial).match(/loadCSS/);
-            should(result.initial).match(/onloadCSS/);
-            should(result.initial).match(/relpreload/);
+            should(result.initial).match(/data-prelink/);
             should(result.subsequent).equal('<script src="test/fixtures/script.js"></script><link rel="stylesheet" href="test/fixtures/style.css">');
             should(Object.keys(result.resources)).be.length(2);
             should(Object.keys(result.resources)).eql([jsHash, cssHash]);
@@ -249,6 +239,32 @@ describe('shortbread()', () => {
                 should(result.initial).be.not.empty();
                 should(result.initial).startWith('<script>');
                 should(result.initial).endWith('</script>');
+                should(result.initial).match(/criticaljs/);
+            });
+        });
+        describe('Critical + non-critical JavaScript', () => {
+            it('as Vinyl files', () => {
+                const result = shortbread(criticaljs, null, criticaljs);
+                should(result.initial).be.not.empty();
+                should(result.initial).startWith('<script>');
+                should(result.initial).endWith('</script>');
+                should(result.initial).match(/data-prelink/);
+                should(result.initial).match(/criticaljs/);
+            });
+            it('as Vinyl file arrays', () => {
+                const result = shortbread([criticaljs], null, [criticaljs]);
+                should(result.initial).be.not.empty();
+                should(result.initial).startWith('<script>');
+                should(result.initial).endWith('</script>');
+                should(result.initial).match(/data-prelink/);
+                should(result.initial).match(/criticaljs/);
+            });
+            it('as Vinyl file objects', () => {
+                const result = shortbread({ critical: criticaljs }, null, { critical: criticaljs });
+                should(result.initial).be.not.empty();
+                should(result.initial).startWith('<script>');
+                should(result.initial).endWith('</script>');
+                should(result.initial).match(/data-prelink/);
                 should(result.initial).match(/criticaljs/);
             });
         });
@@ -390,7 +406,7 @@ describe('shortbread().stream', () => {
 
             gulp.src(['fixtures/*', 'gulp/gulp.php'], { cwd: __dirname })
                 .pipe(shortbread.stream(null, null, null, { css: ['\\.scss$'], js: ['\\.jsx$'] }))
-                .pipe(assert.length(6))
+                .pipe(assert.length(7))
                 .pipe(assert.nth(2, assertData))
                 .pipe(assert.nth(3, assertData))
                 .pipe(assert.nth(4, assertData))

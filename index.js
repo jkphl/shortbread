@@ -1,5 +1,15 @@
 /* eslint strict: ["error", "global"] */
 
+/**
+ * shortbread is an asynchronous, non-blocking loading pattern for CSS and JavaScript resources
+ *
+ * @see https://github.com/jkphl/shortbread
+ *
+ * @author Joschi Kuphal <joschi@kuphal.net> (https://github.com/jkphl)
+ * @copyright © 2019 Joschi Kuphal
+ * @license MIT https://raw.github.com/jkphl/gulp-cache-bust-meta/master/LICENSE
+ */
+
 'use strict';
 
 const Vinyl = require('vinyl');
@@ -76,8 +86,8 @@ function makeVinylFileList(val) {
  */
 function makeRegexList(val) {
     return makeList(val)
-    .filter(v => ((typeof v === 'string' && v.trim().length) || (typeof v === 'object' && v.constructor === RegExp)))
-    .map(v => (typeof v === 'string' ? new RegExp(v) : v));
+        .filter(v => ((typeof v === 'string' && v.trim().length) || (typeof v === 'object' && v.constructor === RegExp)))
+        .map(v => (typeof v === 'string' ? new RegExp(v) : v));
 }
 
 /**
@@ -106,6 +116,7 @@ function shortbread(js, css, critical, slot, callback, config) {
     const cssFiles = makeVinylFileList(css);
     const cssUrls = makeUrlList(css);
     const criticalFiles = makeVinylFileList(critical);
+    const criticalFilePaths = criticalFiles.map(criticalFile => criticalFile.path);
     const cookieSlot = (typeof slot === 'string') ? (slot.trim() || null) : null;
     const options = Object.assign({
         prefix: '',
@@ -118,6 +129,8 @@ function shortbread(js, css, critical, slot, callback, config) {
         options.prefix = '';
     }
 
+    let initial = '';
+    let needsPrelink = cssFiles.length || cssUrls.length;
     const result = {
         initial: '',
         subsequent: '',
@@ -125,6 +138,7 @@ function shortbread(js, css, critical, slot, callback, config) {
         hash: null,
         cookie: `sb${cookieSlot ? `_${cookieSlot}` : ''}`,
     };
+    const clientResources = {};
 
     // Return if no resources are given
     if (!jsFiles.length && !jsUrls.length && !cssFiles.length && !cssUrls.length
@@ -132,36 +146,36 @@ function shortbread(js, css, critical, slot, callback, config) {
         return result;
     }
 
-    // 1. Initial head script
-    let initial = '';
-    if (cssFiles.length || cssUrls.length) {
-        initial += fs.readFileSync(require.resolve('fg-loadcss/src/loadCSS.js'));
-        initial += fs.readFileSync(require.resolve('fg-loadcss/src/onloadCSS.js'));
-        initial += fs.readFileSync(path.join(__dirname, 'build/cssrelpreload.js'));
-    }
-    if (jsFiles.length || jsUrls.length || cssFiles.length || cssUrls.length) {
-        initial += fs.readFileSync(path.join(__dirname, 'build/shortbread.js'));
-    }
-
-    // 2. JavaScript resources
+    // 1. JavaScript resources
     jsFiles.forEach((jsFile) => {
+        // console.log(jsFile.path);
         const resourceHash = shortbread.createHash(jsFile.contents.toString());
         result.resources[resourceHash] = `${options.prefix}${jsFile.relative}`;
-        result.initial += `<script src="${result.resources[resourceHash]}" id="${resourceHash}" async defer onreadystatechange="SHORTBREAD_INSTANCE.onloadScript(this)" onload="SHORTBREAD_INSTANCE.onloadScript(this)"></script>`;
+
+        // If this resource is also registered as critical JavaScript
+        if (criticalFilePaths.indexOf(jsFile.path) >= 0) {
+            needsPrelink = true;
+            clientResources[resourceHash] = 0;
+            result.initial += `<link rel="prefetch" href="${result.resources[resourceHash]}" id="${resourceHash}" as="script" onload="SHORTBREAD_INSTANCE.onloadScript(this)">`;
+        } else {
+            clientResources[resourceHash] = 1;
+            result.initial += `<script src="${result.resources[resourceHash]}" id="${resourceHash}" async defer onreadystatechange="SHORTBREAD_INSTANCE.onloadScript(this)" onload="SHORTBREAD_INSTANCE.onloadScript(this)"></script>`;
+        }
+
         result.subsequent += `<script src="${options.prefix}${jsFile.relative}"></script>`;
     });
     jsUrls.forEach((jsUrl) => {
         const resourceHash = shortbread.createHash(jsUrl);
         result.resources[resourceHash] = jsUrl;
+        clientResources[resourceHash] = 1;
         result.initial += `<script src="${jsUrl}" id="${resourceHash}" async defer onreadystatechange="SHORTBREAD_INSTANCE.onloadScript(this)" onload="SHORTBREAD_INSTANCE.onloadScript(this)"></script>`;
         result.subsequent += `<script src="${jsUrl}"></script>`;
     });
 
-    // 3.a Critical CSS & JavaScript
+    // 2.a Critical CSS & JavaScript
     criticalFiles.forEach((criticalFile) => {
         // Detect whether it's a JavaScript resource
-        for (const r of options.js
-            ) {
+        for (const r of options.js) {
             if (criticalFile.relative.match(r)) {
                 result.initial += `<script>${criticalFile.contents}</script>`;
                 return;
@@ -175,19 +189,28 @@ function shortbread(js, css, critical, slot, callback, config) {
                 return;
             }
         }
-    })
-    ;
+    });
+
+    // 3. Initial head script
+    if (needsPrelink) {
+        initial += fs.readFileSync(require.resolve('prelink/build/prelink.min.js'));
+    }
+    if (jsFiles.length || jsUrls.length || needsPrelink) {
+        initial += fs.readFileSync(path.join(__dirname, 'build/shortbread.js'));
+    }
 
     let synchronousCSS = '';
     cssFiles.forEach((cssFile) => {
         const resourceHash = shortbread.createHash(cssFile.contents.toString());
         result.resources[resourceHash] = `${options.prefix}${cssFile.relative}`;
+        clientResources[resourceHash] = 1;
         result.initial += `<link rel="preload" href="${result.resources[resourceHash]}" id="${resourceHash}" as="style" onload="this.rel='stylesheet';SHORTBREAD_INSTANCE.loaded(this.id)">`;
         synchronousCSS += `<link rel="stylesheet" href="${result.resources[resourceHash]}">`;
     });
     cssUrls.forEach((cssUrl) => {
         const resourceHash = shortbread.createHash(cssUrl);
         result.resources[resourceHash] = cssUrl;
+        clientResources[resourceHash] = 1;
         result.initial += `<link rel="preload" href="${cssUrl}" id="${resourceHash}" as="style" onload="this.rel='stylesheet';SHORTBREAD_INSTANCE.loaded(this.id)">`;
         synchronousCSS += `<link rel="stylesheet" href="${cssUrl}">`;
     });
@@ -201,7 +224,7 @@ function shortbread(js, css, critical, slot, callback, config) {
     result.hash = resourceHashes.length ? shortbread.createHash(resourceHashes.join('-')) : null;
 
     if (resourceHashes.length) {
-        initial += `var SHORTBREAD_INSTANCE = new Shortbread(${JSON.stringify(result.resources)}, '${result.hash}', ${JSON.stringify(cookieSlot)}, ${callbackString});`;
+        initial += `var SHORTBREAD_INSTANCE = new Shortbread(${JSON.stringify(clientResources)}, '${result.hash}', ${JSON.stringify(cookieSlot)}, ${callbackString});`;
     }
     result.initial = `${initial.length ? `<script>"use strict";${uglify.minify(initial).code}</script>` : ''}${result.initial}`;
     result.initial = result.initial.split('SHORTBREAD_INSTANCE').join(`sb${result.hash}`);
