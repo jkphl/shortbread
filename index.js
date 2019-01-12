@@ -149,28 +149,26 @@ function shortbread(js, css, critical, slot, callback, config) {
         result.resources[resourceHash] = `${options.prefix}${jsFile.relative}`;
         result.initial += `<script src="${result.resources[resourceHash]}" id="${resourceHash}" async defer onreadystatechange="SHORTBREAD_INSTANCE.onloadScript(this)" onload="SHORTBREAD_INSTANCE.onloadScript(this)"></script>`;
         result.subsequent += `<script src="${options.prefix}${jsFile.relative}"></script>`;
-    })
-    ;
+    });
     jsUrls.forEach((jsUrl) => {
         const resourceHash = shortbread.createHash(jsUrl);
         result.resources[resourceHash] = jsUrl;
         result.initial += `<script src="${jsUrl}" id="${resourceHash}" async defer onreadystatechange="SHORTBREAD_INSTANCE.onloadScript(this)" onload="SHORTBREAD_INSTANCE.onloadScript(this)"></script>`;
         result.subsequent += `<script src="${jsUrl}"></script>`;
-    })
-    ;
+    });
 
     // 3.a Critical CSS & JavaScript
     criticalFiles.forEach((criticalFile) => {
         // Detect whether it's a JavaScript resource
         for (const r of options.js
-) {
+            ) {
             if (criticalFile.relative.match(r)) {
                 result.initial += `<script>${criticalFile.contents}</script>`;
                 return;
             }
         }
 
-    // Detect whether it's a CSS resource
+        // Detect whether it's a CSS resource
         for (const r of options.css) {
             if (criticalFile.relative.match(r)) {
                 result.initial += `<style>${criticalFile.contents}</style>`;
@@ -186,15 +184,13 @@ function shortbread(js, css, critical, slot, callback, config) {
         result.resources[resourceHash] = `${options.prefix}${cssFile.relative}`;
         result.initial += `<link rel="preload" href="${result.resources[resourceHash]}" id="${resourceHash}" as="style" onload="this.rel='stylesheet';SHORTBREAD_INSTANCE.loaded(this.id)">`;
         synchronousCSS += `<link rel="stylesheet" href="${result.resources[resourceHash]}">`;
-    })
-    ;
+    });
     cssUrls.forEach((cssUrl) => {
         const resourceHash = shortbread.createHash(cssUrl);
         result.resources[resourceHash] = cssUrl;
         result.initial += `<link rel="preload" href="${cssUrl}" id="${resourceHash}" as="style" onload="this.rel='stylesheet';SHORTBREAD_INSTANCE.loaded(this.id)">`;
         synchronousCSS += `<link rel="stylesheet" href="${cssUrl}">`;
-    })
-    ;
+    });
     if (synchronousCSS.length) {
         result.initial += `<noscript>${synchronousCSS}</noscript>`;
         result.subsequent += synchronousCSS;

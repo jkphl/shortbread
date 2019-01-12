@@ -1,3 +1,6 @@
+## 0.6.1 Maintenance release (2018-01-12)
+* Updated dependencies
+
 ## 0.6.0 Feature release (2018-08-04)
 * Updated dependencies
 * Include resource paths in result object

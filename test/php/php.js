@@ -8,13 +8,15 @@ const handlebars = require('handlebars');
 fs.mkdirsSync(path.join(__dirname, '../tmp'));
 
 const criticalCSS = vinyl.readSync(path.join(__dirname, '../fixtures/critical.css'));
+const criticalJS = vinyl.readSync(path.join(__dirname, '../fixtures/critical.js'));
+criticalJS.path = `${criticalJS.base}/index.php?asset=critical.js`;
 const script = vinyl.readSync(path.join(__dirname, '../fixtures/script.js'));
 script.path = `${script.base}/index.php?asset=script.js`;
-const js = [script];
+const js = [criticalJS, script];
 const style = vinyl.readSync(path.join(__dirname, '../fixtures/style.css'));
 style.path = `${style.base}/index.php?asset=style.css`;
 const css = [style];
-const result = shortbread(js, css, criticalCSS, 'main', 'allLoaded');
+const result = shortbread(js, css, [criticalCSS, criticalJS], 'main', 'allLoaded');
 
 // Compile and store the PHP test file
 const hbs = fs.readFileSync(path.join(__dirname, 'index.hbs'));

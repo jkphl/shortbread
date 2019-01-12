@@ -332,7 +332,7 @@ describe('shortbread().stream', () => {
     });
 
     it('should set result data other resources', (done) => {
-        gulp.src(['fixtures/*.js', 'fixtures/style.css', 'gulp/gulp.php'], { cwd: __dirname })
+        gulp.src(['fixtures/script.js', 'fixtures/style.css', 'gulp/gulp.php'], { cwd: __dirname })
             .pipe(shortbread.stream())
             .pipe(assert.length(3))
             .pipe(assert.nth(0, (d) => {
@@ -390,11 +390,12 @@ describe('shortbread().stream', () => {
 
             gulp.src(['fixtures/*', 'gulp/gulp.php'], { cwd: __dirname })
                 .pipe(shortbread.stream(null, null, null, { css: ['\\.scss$'], js: ['\\.jsx$'] }))
-                .pipe(assert.length(6))
+                .pipe(assert.length(7))
                 .pipe(assert.nth(2, assertData))
                 .pipe(assert.nth(3, assertData))
                 .pipe(assert.nth(4, assertData))
                 .pipe(assert.nth(5, assertData))
+                .pipe(assert.nth(6, assertData))
                 .pipe(assert.end(done));
         });
 
@@ -425,7 +426,7 @@ describe('shortbread().stream', () => {
         });
 
         it('data JSON file', (done) => {
-            gulp.src('none')
+            gulp.src('none', { allowEmpty: true })
                 .pipe(shortbread.stream(null, null, null, { data: true }))
                 .pipe(assert.length(1))
                 .pipe(assert.nth(0, (d) => {
@@ -444,7 +445,7 @@ describe('shortbread().stream', () => {
         it('external resources / URLs', (done) => {
             const resources = { jsUrl: [jsUrl], cssUrl: [cssUrl], data: true };
             const resourceHash = shortbread.createHash(`${jsHash}-${jsUrlHash}-${cssHash}-${cssUrlHash}`);
-            gulp.src(['fixtures/*.js', 'fixtures/style.css', 'gulp/gulp.php'], { cwd: __dirname })
+            gulp.src(['fixtures/script.js', 'fixtures/style.css', 'gulp/gulp.php'], { cwd: __dirname })
                 .pipe(shortbread.stream(null, null, null, resources))
                 .pipe(assert.length(4))
                 .pipe(assert.nth(3, (d) => {
