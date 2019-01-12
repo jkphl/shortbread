@@ -390,7 +390,7 @@ describe('shortbread().stream', () => {
 
             gulp.src(['fixtures/*', 'gulp/gulp.php'], { cwd: __dirname })
                 .pipe(shortbread.stream(null, null, null, { css: ['\\.scss$'], js: ['\\.jsx$'] }))
-                .pipe(assert.length(7))
+                .pipe(assert.length(6))
                 .pipe(assert.nth(2, assertData))
                 .pipe(assert.nth(3, assertData))
                 .pipe(assert.nth(4, assertData))
