@@ -116,7 +116,7 @@ function shortbread(js, css, critical, slot, callback, config) {
     const cssFiles = makeVinylFileList(css);
     const cssUrls = makeUrlList(css);
     const criticalFiles = makeVinylFileList(critical);
-    const criticalFilePaths = criticalFiles.map(criticalFile => criticalFile.path);
+    const criticalFilePaths = criticalFiles.map(criticalFile => path.resolve(criticalFile.path));
     const cookieSlot = (typeof slot === 'string') ? (slot.trim() || null) : null;
     const options = Object.assign({
         prefix: '',
@@ -148,12 +148,11 @@ function shortbread(js, css, critical, slot, callback, config) {
 
     // 1. JavaScript resources
     jsFiles.forEach((jsFile) => {
-        // console.log(jsFile.path);
         const resourceHash = shortbread.createHash(jsFile.contents.toString());
         result.resources[resourceHash] = `${options.prefix}${jsFile.relative}`;
 
         // If this resource is also registered as critical JavaScript
-        if (criticalFilePaths.indexOf(jsFile.path) >= 0) {
+        if (criticalFilePaths.indexOf(path.resolve(jsFile.path)) >= 0) {
             needsPrelink = true;
             clientResources[resourceHash] = 0;
             result.initial += `<link rel="prefetch" href="${result.resources[resourceHash]}" id="${resourceHash}" as="script" onload="SHORTBREAD_INSTANCE.onloadScript(this)">`;

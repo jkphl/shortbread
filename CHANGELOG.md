@@ -1,5 +1,8 @@
+## 1.0.1 Bugfix release (2018-01-12)
+* Fix critical / non-critial JS path comparison
+
 ## 1.0.0 Feature release (2018-01-12)
-* Prevent double evaluation of critical JavaScripts on first load ([#2](https://github.com/jkphl/shortbread/issues/2)))
+* Prevent double evaluation of critical JavaScripts on first load ([#2](https://github.com/jkphl/shortbread/issues/2))
 * Remove Filament Group's loadCSS
 * Switch to [jkphl/prelink](https://github.com/jkphl/prelink)
 
