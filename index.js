@@ -250,6 +250,7 @@ shortbread.stream = function stream(critical, slot, callback, config) {
         initial: 'initial.html',
         subsequent: 'subsequent.html',
         data: false,
+        debug: false,
     }, config || {});
     options.css = makeRegexList(options.css);
     options.js = makeRegexList(options.js);
@@ -330,6 +331,7 @@ shortbread.stream = function stream(critical, slot, callback, config) {
                 prefix: options.prefix,
                 css: options.css,
                 js: options.js,
+                debug: options.debug,
             });
 
         // If resources have been specified
