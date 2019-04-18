@@ -140,11 +140,12 @@ By default, the name of the *shortbread* cookie is `sb`. If you're using multipl
 
 The sixth argument to `shortbread()` may be an object with following properties:
 
-| Property | Type     | Description                                    |
-|----------|----------|------------------------------------------------|
-| prefix   | String   | Prefix for all resource URLs (JavaScript and CSS). Set it to `"/"` for instance in order to use root-relative paths like `<script src="/path/to/script.js">`.|
-| css      | Array    | List of regular expressions to match critical CSS resource file names (defaults to `['\\.css$']`) |
-| js       | Array    | List of regular expressions to match critical JavaScript resource file names (defaults to `['\\.js$']`) |
+| Property | Type    | Description                                                                                                                                                   |
+|:---------|:--------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| prefix   | String  | Prefix for all resource URLs (JavaScript and CSS). Set it to `"/"` for instance in order to use root-relative paths like `<script src="/path/to/script.js">`. |
+| css      | Array   | List of regular expressions to match critical CSS resource file names (defaults to `['\\.css$']`)                                                             |
+| js       | Array   | List of regular expressions to match critical JavaScript resource file names (defaults to `['\\.js$']`)                                                       |
+| debug    | Boolean | Print some debug messages to the console (output level needs to be configured appropriately)                                                                  |
 
 
 Server side load type detection

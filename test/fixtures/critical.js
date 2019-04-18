@@ -1,2 +1,2 @@
 /* eslint no-console: ["off"] */
-console.log('Critical JS loades successfully (must only be printed once!)');
+console.log('Critical JS loaded successfully (must only be printed once!)');

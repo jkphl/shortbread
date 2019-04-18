@@ -122,6 +122,7 @@ function shortbread(js, css, critical, slot, callback, config) {
         prefix: '',
         css: ['\\.css$'],
         js: ['\\.js$'],
+        debug: false,
     }, config || {});
     const callbackString = callback ? JSON.stringify(callback) : 'null';
 
@@ -195,7 +196,7 @@ function shortbread(js, css, critical, slot, callback, config) {
         initial += fs.readFileSync(require.resolve('prelink/build/prelink.min.js'));
     }
     if (jsFiles.length || jsUrls.length || needsPrelink) {
-        initial += fs.readFileSync(path.join(__dirname, 'build/shortbread.js'));
+        initial += fs.readFileSync(path.join(__dirname, `build/shortbread${options.debug ? '.debug' : ''}.js`));
     }
 
     let synchronousCSS = '';

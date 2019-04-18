@@ -1,3 +1,6 @@
+## 1.0.2 Bugfix release (unreleased)
+* Updated dependencies
+
 ## 1.0.1 Bugfix release (2018-01-12)
 * Fix critical / non-critial JS path comparison
 

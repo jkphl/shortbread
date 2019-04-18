@@ -1,4 +1,5 @@
 /* eslint-disable no-param-reassign */
+/* eslint-disable no-console */
 
 /**
  * shortbread is an asynchronous, non-blocking loading pattern for CSS and JavaScript resources
@@ -54,6 +55,9 @@ function Shortbread() {
      * @type {Boolean}
      */
     this.complete = false;
+
+    // Debug all registered resources
+    console.debug('Registered ' + Object.values(resources).length + ' resource(s)', resources);
 }
 
 /**
@@ -81,6 +85,8 @@ Shortbread.prototype.loaded = function loaded(resourceId) {
             required += res[r] = this.res[r];
         }
     }
+    console.debug('Loaded resource ' + resourceId + ': ' + (Object.values(res).length < Object.values(this.res).length ? 'OK' : 'FAILED'));
+    console.debug('Waiting for anoter ' + required + ' required resource(s)', res);
     this.res = res;
 
     // If all expected resources have been loaded
@@ -92,6 +98,7 @@ Shortbread.prototype.loaded = function loaded(resourceId) {
             var expires = new Date(+new Date() + 604800000).toUTCString();
             var cookie = 'sb' + (this.slot ? '_' + this.slot : '');
             document.cookie = cookie + '=' + this.hash + '; expires=' + expires;
+            console.debug('Setting shortbread cookie');
         }
 
         // Look for a callback to be run
@@ -99,6 +106,7 @@ Shortbread.prototype.loaded = function loaded(resourceId) {
             this.cb = window[this.cb];
         }
         if (typeof this.cb === 'function') {
+            console.debug('Triggering callback');
             this.cb();
         }
     }
