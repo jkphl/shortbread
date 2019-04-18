@@ -1,5 +1,6 @@
-## 1.0.2 Bugfix release (unreleased)
+## 1.0.2 Bugfix release (2019-04-18)
 * Updated dependencies
+* Add debug message console output option
 
 ## 1.0.1 Bugfix release (2018-01-12)
 * Fix critical / non-critial JS path comparison
