@@ -1,3 +1,7 @@
+## 1.0.3 Feature release (2019-07-12)
+* Updated dependencies
+* Bind cookie to root path
+
 ## 1.0.2 Bugfix release (2019-04-18)
 * Updated dependencies
 * Add debug message console output option

@@ -91,7 +91,7 @@ Shortbread.prototype.loaded = function loaded(resourceId) {
         if (this.hash) {
             var expires = new Date(+new Date() + 604800000).toUTCString();
             var cookie = 'sb' + (this.slot ? '_' + this.slot : '');
-            document.cookie = cookie + '=' + this.hash + '; expires=' + expires;
+            document.cookie = cookie + '=' + this.hash + ';path=/;expires=' + expires;
         }
 
         // Look for a callback to be run

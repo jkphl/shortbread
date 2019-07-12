@@ -86,7 +86,7 @@ Shortbread.prototype.loaded = function loaded(resourceId) {
         }
     }
     console.debug('Loaded resource ' + resourceId + ': ' + (Object.values(res).length < Object.values(this.res).length ? 'OK' : 'FAILED'));
-    console.debug('Waiting for anoter ' + required + ' required resource(s)', res);
+    console.debug('Waiting for another ' + required + ' required resource(s)', res);
     this.res = res;
 
     // If all expected resources have been loaded
@@ -97,7 +97,7 @@ Shortbread.prototype.loaded = function loaded(resourceId) {
         if (this.hash) {
             var expires = new Date(+new Date() + 604800000).toUTCString();
             var cookie = 'sb' + (this.slot ? '_' + this.slot : '');
-            document.cookie = cookie + '=' + this.hash + '; expires=' + expires;
+            document.cookie = cookie + '=' + this.hash + ';path=/;expires=' + expires;
             console.debug('Setting shortbread cookie');
         }
 
