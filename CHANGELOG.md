@@ -1,5 +1,6 @@
-## 1.0.3 Feature release (2019-07-12)
+## 2.0.0 Feature release (2019-07-12)
 * Updated dependencies
+* Drop support for Node < 9
 * Bind cookie to root path
 
 ## 1.0.2 Bugfix release (2019-04-18)
